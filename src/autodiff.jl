@@ -26,24 +26,24 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     end
 
     ∂z∂θ[active_indices, :] = LinearAlgebra.qr(-∂f_reduced∂z_reduced) \ collect(∂f_reduce∂θ)
-    (; ∂z∂θ, active_indices)
+    ∂z∂θ
 end
 
 function ChainRulesCore.rrule(::typeof(solve), problem, θ; kwargs...)
     solution = solve(problem, θ; kwargs...)
-    project_to_θ = ProjectTo(θ)
+    project_to_θ = ChainRulesCore.ProjectTo(θ)
 
     function solve_pullback(∂solution)
-        no_grad_args = (; ∂self = NoTangent(), ∂problem = NoTangent())
+        no_grad_args = (; ∂self = ChainRulesCore.NoTangent(), ∂problem = ChainRulesCore.NoTangent())
 
         ∂θ = ChainRulesCore.@thunk let
             ∂z∂θ = _solve_jacobian_θ(problem, solution, θ)
-            ∂l∂z = solution.z
+            ∂l∂z = ∂solution.z
             project_to_θ(∂z∂θ' * ∂l∂z)
         end
 
         no_grad_args..., ∂θ
     end
 
-    res, solve_pullback
+    solution, solve_pullback
 end
