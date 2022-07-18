@@ -5,6 +5,14 @@
 
 This packages provide a generic, differentiable mathematical programming layer by compiling mixed complementarity problems (MCPs) parameterized by a "runtime"-parameter vector. The resulting `ParametricMCP` can solved for different parameter instantiations using `solve(problem, paramters)` and the `solve` routine is made differentiable via `ChainRulesCore`.
 
+## Installation
+
+This package is not yet registered. For now, simply install it as git dependency (and don't forget to check-in you `Manifest.toml` if you do).
+
+```julia
+] add https://github.com/lassepe/DifferentiableMCPs.jl
+```
+
 ## Quickstart by Example
 
 Simple forward computation:
