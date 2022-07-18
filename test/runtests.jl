@@ -5,8 +5,6 @@ using LinearAlgebra: norm
 using Zygote: Zygote
 using FiniteDiff: FiniteDiff
 
-using Infiltrator
-
 @testset "DifferentiableMCPs.jl" begin
     rng = Random.MersenneTwister(1)
     parameter_dimension = 2
