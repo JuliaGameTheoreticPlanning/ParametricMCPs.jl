@@ -7,6 +7,8 @@ This packages provide a generic, differentiable mathematical programming layer b
 
 ## Quickstart by Example
 
+Simple forward computation:
+
 ```julia
 using DifferentiableMCPs
 
@@ -21,4 +23,18 @@ problem = ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
 
 some_parameter = [1.0, 2.0]
 solve(problem, some_parameter)
+```
+
+Since we provide differentiation rules via `ChainRulesCore`, the solver can be
+using your favourite ad-framework, e.g., Zygote:
+
+```julia
+using Zygote
+
+function dummy_pipeline(θ)
+    solution = DifferentiableMCPs.solve(problem, θ)
+    sum(solution.z .^ 2)
+end
+
+Zygote.gradient(dummy_pipeline, some_parameter)
 ```
