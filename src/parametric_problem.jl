@@ -2,8 +2,8 @@ struct ParametricMCP{T}
     """
     (;
         f!(result, z, θ),
-        f_jacobian_z!(result, z, θ),
-        f_jacobian_θ!(result, z, θ),
+        jacobian_z!(result, z, θ),
+        jacobian_θ!(result, z, θ),
         lower_bounds,
         upper_bounds,
         parameter_dimension,
@@ -31,8 +31,8 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
             "The output lenght of `f` is inconsistent with `lower_bounds` and `upper_bounds`.",
         ),
     )
-    f_jacobian_z_symbolic = Symbolics.sparsejacobian(f_symbolic, z_symbolic)
-    f_jacobian_θ_symbolic = Symbolics.sparsejacobian(f_symbolic, θ_symbolic)
+    jacobian_z_symbolic = Symbolics.sparsejacobian(f_symbolic, z_symbolic)
+    jacobian_θ_symbolic = Symbolics.sparsejacobian(f_symbolic, θ_symbolic)
 
     # compile all the symbolic expressions into callable julia code
     f! = let
@@ -40,34 +40,34 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         (result, z, θ) -> _f!(result, [z; θ])
     end
 
-    f_jacobian_z! = let
+    jacobian_z! = let
         _f! = Symbolics.build_function(
-            f_jacobian_z_symbolic,
+            jacobian_z_symbolic,
             [z_symbolic; θ_symbolic];
             expression = Val{false},
         )[2]
-        rows, cols, _ = SparseArrays.findnz(f_jacobian_z_symbolic)
-        SparseFunction(rows, cols, size(f_jacobian_z_symbolic)) do result, z, θ
+        rows, cols, _ = SparseArrays.findnz(jacobian_z_symbolic)
+        SparseFunction(rows, cols, size(jacobian_z_symbolic)) do result, z, θ
             _f!(result, [z; θ])
         end
     end
 
-    f_jacobian_θ! = let
+    jacobian_θ! = let
         _f! = Symbolics.build_function(
-            f_jacobian_θ_symbolic,
+            jacobian_θ_symbolic,
             [z_symbolic; θ_symbolic];
             expression = Val{false},
         )[2]
-        rows, cols, _ = SparseArrays.findnz(f_jacobian_θ_symbolic)
-        SparseFunction(rows, cols, size(f_jacobian_θ_symbolic)) do result, z, θ
+        rows, cols, _ = SparseArrays.findnz(jacobian_θ_symbolic)
+        SparseFunction(rows, cols, size(jacobian_θ_symbolic)) do result, z, θ
             _f!(result, [z; θ])
         end
     end
 
     ParametricMCP((;
         f!,
-        f_jacobian_z!,
-        f_jacobian_θ!,
+        jacobian_z!,
+        jacobian_θ!,
         lower_bounds,
         upper_bounds,
         parameter_dimension,

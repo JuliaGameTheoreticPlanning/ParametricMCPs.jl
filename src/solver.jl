@@ -4,7 +4,7 @@ function solve(
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
 )
-    (; f!, f_jacobian_z!, lower_bounds, upper_bounds) = problem.fields
+    (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem.fields
 
     problem_size = get_problem_size(problem)
 
@@ -14,8 +14,8 @@ function solve(
     end
 
     function J(n, nnz, z, col, len, row, data)
-        result = get_result_buffer(f_jacobian_z!)
-        f_jacobian_z!(result, z, θ)
+        result = get_result_buffer(jacobian_z!)
+        jacobian_z!(result, z, θ)
         _coo_from_sparse!(col, len, row, data, result)
         Cint(0)
     end
@@ -29,7 +29,7 @@ function solve(
         initial_guess;
         silent = !verbose,
         # TODO: not sure why nnz above is too large
-        nnz = SparseArrays.nnz(f_jacobian_z!) - 1,
+        nnz = SparseArrays.nnz(jacobian_z!) - 1,
     )
 
     (; z, status, info)

@@ -1,5 +1,5 @@
 function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
-    (; f_jacobian_z!, f_jacobian_θ!, lower_bounds, upper_bounds) = problem.fields
+    (; jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds) = problem.fields
     z_star = solution.z
 
     active_indices = let
@@ -23,14 +23,14 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     end
 
     ∂f_reduce∂θ = let
-        ∂f∂θ = get_result_buffer(f_jacobian_θ!)
-        f_jacobian_θ!(∂f∂θ, z_star, θ)
+        ∂f∂θ = get_result_buffer(jacobian_θ!)
+        jacobian_θ!(∂f∂θ, z_star, θ)
         ∂f∂θ[active_indices, :]
     end
 
     ∂f_reduced∂z_reduced = let
-        ∂f∂z = get_result_buffer(f_jacobian_z!)
-        f_jacobian_z!(∂f∂z, z_star, θ)
+        ∂f∂z = get_result_buffer(jacobian_z!)
+        jacobian_z!(∂f∂z, z_star, θ)
         ∂f∂z[active_indices, active_indices]
     end
 
