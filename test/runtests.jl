@@ -8,9 +8,7 @@ using FiniteDiff: FiniteDiff
 @testset "DifferentiableMCPs.jl" begin
     rng = Random.MersenneTwister(1)
     parameter_dimension = 2
-    # setup a dummy mcp:
-    #
-    # This is a simple QP with
+    # setup a dummy MCP which represents a QP with:
     # - cost: sum((z[1:2] - θ).^2)
     # - constaints: z[1:2] >= 0
     f(z, θ) = [2z[1:2] - z[3:4] - 2θ; z[1:2]]
