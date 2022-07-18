@@ -1,19 +1,14 @@
-struct ParametricMCP{T}
-    """
-    (;
-        f!(result, z, θ),
-        jacobian_z!(result, z, θ),
-        jacobian_θ!(result, z, θ),
-        lower_bounds,
-        upper_bounds,
-        parameter_dimension,
-    )
-    """
-    fields::T
+struct ParametricMCP{T1,T2,T3}
+    f!::T1
+    jacobian_z!::T2
+    jacobian_θ!::T3
+    lower_bounds::Vector{Float64}
+    upper_bounds::Vector{Float64}
+    parameter_dimension::Int
 end
 
-get_problem_size(problem::ParametricMCP) = length(problem.fields.lower_bounds)
-get_parameter_dimension(problem::ParametricMCP) = problem.fields.parameter_dimension
+get_problem_size(problem::ParametricMCP) = length(problem.lower_bounds)
+get_parameter_dimension(problem::ParametricMCP) = problem.parameter_dimension
 
 function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
     length(lower_bounds) == length(upper_bounds) ||
@@ -64,12 +59,5 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         end
     end
 
-    ParametricMCP((;
-        f!,
-        jacobian_z!,
-        jacobian_θ!,
-        lower_bounds,
-        upper_bounds,
-        parameter_dimension,
-    ))
+    ParametricMCP((; f!, jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds, parameter_dimension))
 end

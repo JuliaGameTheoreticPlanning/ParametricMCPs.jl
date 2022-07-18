@@ -4,7 +4,7 @@ function solve(
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
 )
-    (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem.fields
+    (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
 
     problem_size = get_problem_size(problem)
 

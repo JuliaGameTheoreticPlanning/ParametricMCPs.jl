@@ -1,5 +1,5 @@
 function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
-    (; jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds) = problem.fields
+    (; jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds) = problem
     z_star = solution.z
 
     inactive_indices = let
