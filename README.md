@@ -1,6 +1,7 @@
 # DifferentiableMCPs
 
 [![CI](https://github.com/lassepe/DifferentiableMCPs.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/lassepe/DifferentiableMCPs.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/lassepe/DifferentiableMCPs.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/lassepe/DifferentiableMCPs.jl)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 
 This packages provide a generic, differentiable mathematical programming layer by compiling mixed complementarity problems (MCPs) parameterized by a "runtime"-parameter vector. The resulting `ParametricMCP` can solved for different parameter instantiations using `solve(problem, paramters)` and the `solve` routine is made differentiable via `ChainRulesCore`.
