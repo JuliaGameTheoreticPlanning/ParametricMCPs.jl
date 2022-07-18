@@ -1,15 +1,43 @@
+"""
+ParametricMCP represents a mixed complementarity problem (MCP) parameterized by some vector `θ`.
+
+Solutions of this problem solve f(z, θ) ⟂ lb ≤ z ≤ ub.
+"""
 struct ParametricMCP{T1,T2,T3}
+    "A callable `f!(result, z, θ)` which stores the result of `f(z, θ)` in `result`"
     f!::T1
+    "A callable `j_z!(result, z, θ)` which store the jacobian w.r.t. z at `(z, θ)` in `result`."
     jacobian_z!::T2
+    "A callable `j_z!(result, z, θ)` which store the jacobian w.r.t. θ at `(z, θ)` in `result`."
     jacobian_θ!::T3
+    "A vector of lower bounds on `z`."
     lower_bounds::Vector{Float64}
+    "A vector of upper bounds on `z`."
     upper_bounds::Vector{Float64}
+    "The number of 'runtime'-parameters of the problem."
     parameter_dimension::Int
 end
 
+"Returns the number of decision variables for this problem."
 get_problem_size(problem::ParametricMCP) = length(problem.lower_bounds)
+
+"Returns the number of decision variables for this problem."
 get_parameter_dimension(problem::ParametricMCP) = problem.parameter_dimension
 
+"""
+The main constructor for compiling a `ParametricMCP` from
+
+- `f`: callabale as `f(z, θ)` that maps a lenght `n` vector of decision variables `z` and a \
+parameter vector `θ` of size `parameter_dimension` to an lenght `n` vector output.
+- `lower_bounds`: A lenght `n` vector of element-wise lower bounds on the decision variables `z`.
+- `upper_bounds`: A length `n` vector of element-wise upper bounds on the decision variables `z`.
+- `parameter_dimension`: the size of the parameter vector `θ` in `f`.
+
+Note, this constructor uses `Symbolics.jl` to compile the relevant low-level functions. Therefore,
+`f` must be implemented in a sufficiently generic way that supports symbolic evaluation. In cases
+where that is strictly infeasible, you can still use the low-level constructor to generate a
+`ParametricMCP`. In general, however, the use of this convenience construtor is advised.
+"""
 function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
