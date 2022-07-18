@@ -6,12 +6,14 @@ struct ParametricMCP{T}
         f_jacobian_θ!(result, z, θ),
         lower_bounds,
         upper_bounds,
+        parameter_dimension,
     )
     """
     fields::T
 end
 
 get_problem_size(problem::ParametricMCP) = length(problem.fields.lower_bounds)
+get_parameter_dimension(problem::ParametricMCP) = problem.fields.parameter_dimension
 
 function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
     length(lower_bounds) == length(upper_bounds) ||
@@ -45,7 +47,7 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
             expression = Val{false},
         )[2]
         rows, cols, _ = SparseArrays.findnz(f_jacobian_z_symbolic)
-        SparseFunction(rows, cols) do result, z, θ
+        SparseFunction(rows, cols, size(f_jacobian_z_symbolic)) do result, z, θ
             _f!(result, [z; θ])
         end
     end
@@ -57,10 +59,17 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
             expression = Val{false},
         )[2]
         rows, cols, _ = SparseArrays.findnz(f_jacobian_θ_symbolic)
-        SparseFunction(rows, cols) do result, z, θ
+        SparseFunction(rows, cols, size(f_jacobian_θ_symbolic)) do result, z, θ
             _f!(result, [z; θ])
         end
     end
 
-    ParametricMCP((; f!, f_jacobian_z!, f_jacobian_θ!, lower_bounds, upper_bounds))
+    ParametricMCP((;
+        f!,
+        f_jacobian_z!,
+        f_jacobian_θ!,
+        lower_bounds,
+        upper_bounds,
+        parameter_dimension,
+    ))
 end

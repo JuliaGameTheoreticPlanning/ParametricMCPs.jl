@@ -2,10 +2,15 @@ struct SparseFunction{T}
     _f::T
     rows::Vector{Int}
     cols::Vector{Int}
+    size::Tuple{Int,Int}
 end
 (f::SparseFunction)(args...) = f._f(args...)
 SparseArrays.nnz(f::SparseFunction) = length(f.rows)
 
+function get_result_buffer(f::SparseFunction)
+    data = zeros(SparseArrays.nnz(f))
+    SparseArrays.sparse(f.rows, f.cols, data, f.size...)
+end
 
 """
 Convert a Julia sparse array `M` into the \

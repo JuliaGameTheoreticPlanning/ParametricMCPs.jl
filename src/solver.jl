@@ -1,4 +1,4 @@
-function solve_mcp(
+function solve(
     problem::ParametricMCP,
     θ;
     initial_guess = zeros(get_problem_size(problem)),
@@ -14,14 +14,14 @@ function solve_mcp(
     end
 
     function J(n, nnz, z, col, len, row, data)
-        result = SparseArrays.sparse(f_jacobian_z!.rows, f_jacobian_z!.cols, zero(data))
+        result = get_result_buffer(f_jacobian_z!)
         f_jacobian_z!(result, z, θ)
         _coo_from_sparse!(col, len, row, data, result)
         Cint(0)
     end
 
     silent = !verbose
-    status, solution, info = PATHSolver.solve_mcp(
+    status, z, info = PATHSolver.solve_mcp(
         F,
         J,
         lower_bounds,
@@ -32,5 +32,5 @@ function solve_mcp(
         nnz = SparseArrays.nnz(f_jacobian_z!) - 1,
     )
 
-    (; solution, status, info)
+    (; z, status, info)
 end
