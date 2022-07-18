@@ -59,5 +59,5 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         end
     end
 
-    ParametricMCP((; f!, jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds, parameter_dimension))
+    ParametricMCP(f!, jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds, parameter_dimension)
 end
