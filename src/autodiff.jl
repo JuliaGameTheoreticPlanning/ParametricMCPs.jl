@@ -37,3 +37,22 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     ∂z∂θ[active_indices, active_indices] = LinearAlgebra.qr(-∂f_reduced∂z_reduced) \ ∂f_reduce∂θ
     ∂z∂θ
 end
+
+function ChainRulesCore.rrule(::typeof(solve), problem, θ; kwargs...)
+    solution = solve(problem, θ; kwargs...)
+    project_to_θ = ProjectTo(θ)
+
+    function solve_pullback(∂solution)
+        no_grad_args = (; ∂self = NoTangent(), ∂problem = NoTangent())
+
+        ∂θ = ChainRulesCore.@thunk let
+            ∂z∂θ = _solve_jacobian_θ(problem, solution, θ)
+            ∂l∂z = solution.z
+            project_to_θ(∂z∂θ' * ∂l∂z)
+        end
+
+        no_grad_args..., ∂θ
+    end
+
+    res, solve_pullback
+end
