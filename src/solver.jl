@@ -32,5 +32,9 @@ function solve(
         nnz = SparseArrays.nnz(jacobian_z!) - 1,
     )
 
+    if status != PATHSolver.MCP_Solved
+        @warn "MCP not converged: PATH solver status is $(status)."
+    end
+
     (; z, status, info)
 end
