@@ -60,7 +60,7 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
     # compile all the symbolic expressions into callable julia code
     f! = let
         _f! = Symbolics.build_function(f_symbolic, [z_symbolic; θ_symbolic]; expression = Val{false})[2]
-        (result, z, θ) -> _f!(result, LazyArrays.ApplyArray(vcat, z, θ))
+        (result, z, θ) -> _f!(result, [z; θ])
     end
 
     jacobian_z! = let
@@ -71,7 +71,7 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         )[2]
         rows, cols, _ = SparseArrays.findnz(jacobian_z_symbolic)
         SparseFunction(rows, cols, size(jacobian_z_symbolic)) do result, z, θ
-            _f!(result, LazyArrays.ApplyArray(vcat, z, θ))
+            _f!(result, [z; θ])
         end
     end
 
@@ -83,7 +83,7 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         )[2]
         rows, cols, _ = SparseArrays.findnz(jacobian_θ_symbolic)
         SparseFunction(rows, cols, size(jacobian_θ_symbolic)) do result, z, θ
-            _f!(result, LazyArrays.ApplyArray(vcat, z, θ))
+            _f!(result, [z; θ])
         end
     end
 
