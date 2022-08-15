@@ -3,7 +3,7 @@ function solve(
     θ;
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
-    solver_options = (;),
+    options...,
 )
     (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
 
@@ -31,7 +31,7 @@ function solve(
         silent = !verbose,
         # TODO: not sure why nnz above is too large
         nnz = SparseArrays.nnz(jacobian_z!) - 1,
-        solver_options...,
+        options...,
     )
 
     if status != PATHSolver.MCP_Solved
