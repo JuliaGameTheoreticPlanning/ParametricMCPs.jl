@@ -38,9 +38,11 @@ using FiniteDiff: FiniteDiff
         end
 
         for θ in [feasible_parameters; infeasible_parameters]
-            ∇_autodiff = only(Zygote.gradient(dummy_pipeline, θ))
+            ∇_autodiff_reverse = only(Zygote.gradient(dummy_pipeline, θ))
+            ∇_autodiff_forward = only(Zygote.gradient(θ -> Zygote.forwarddiff(dummy_pipeline, θ), θ))
             ∇_finitediff = FiniteDiff.finite_difference_gradient(dummy_pipeline, θ)
-            @test isapprox(∇_autodiff, ∇_finitediff; atol = 1e-4)
+            @test isapprox(∇_autodiff_reverse, ∇_finitediff; atol = 1e-4)
+            @test isapprox(∇_autodiff_reverse, ∇_autodiff_forward; atol = 1e-4)
         end
     end
 end
