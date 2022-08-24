@@ -5,6 +5,7 @@ using LinearAlgebra: LinearAlgebra
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
 using Symbolics: Symbolics
+using ForwardDiff: ForwardDiff
 
 
 include("sparse_utils.jl")

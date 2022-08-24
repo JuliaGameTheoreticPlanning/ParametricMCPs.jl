@@ -49,3 +49,19 @@ function ChainRulesCore.rrule(::typeof(solve), problem, θ; kwargs...)
 
     solution, solve_pullback
 end
+
+function solve(problem::ParametricMCP, θ::AbstractVector{<:ForwardDiff.Dual{T}}; kwargs...) where {T}
+    # strip off the duals:
+    θ_v = ForwardDiff.value.(θ)
+    θ_p = ForwardDiff.partials.(θ)
+    # forward pass
+    solution = solve(problem, θ_v; kwargs...)
+    # backward pass
+    ∂z∂θ = DifferentiableMCPs._solve_jacobian_θ(problem, solution, θ_v)
+    # downstream gradient
+    z_p = ∂z∂θ * θ_p
+    # glue forward and backward pass together into dual number types
+    z_d = ForwardDiff.Dual{T}.(solution.z, z_p)
+
+    (; z=z_d, solution.status, solution.info)
+end
