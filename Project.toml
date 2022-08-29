@@ -6,8 +6,6 @@ version = "0.1.0"
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-LazyAlgebra = "aeaa251e-9d76-11e9-311b-83636bf44738"
-LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PATHSolver = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
