@@ -3,6 +3,7 @@ function solve(
     θ;
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
+    warn_on_convergence_failure = true,
     options...,
 )
     (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
@@ -34,7 +35,7 @@ function solve(
         options...,
     )
 
-    if status != PATHSolver.MCP_Solved
+    if warn_on_convergence_failure && status != PATHSolver.MCP_Solved
         @warn "MCP not converged: PATH solver status is $(status)."
     end
 
