@@ -8,8 +8,6 @@ function solve(
 )
     (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
 
-    problem_size = get_problem_size(problem)
-
     function F(n, z, f)
         f!(f, z, θ)
         Cint(0)
@@ -22,7 +20,6 @@ function solve(
         Cint(0)
     end
 
-    silent = !verbose
     status, z, info = PATHSolver.solve_mcp(
         F,
         J,
