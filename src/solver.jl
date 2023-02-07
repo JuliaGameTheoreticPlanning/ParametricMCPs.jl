@@ -27,8 +27,7 @@ function solve(
         upper_bounds,
         initial_guess;
         silent = !verbose,
-        # TODO: not sure why nnz above is too large
-        nnz = SparseArrays.nnz(jacobian_z!) - 1,
+        nnz = SparseArrays.nnz(jacobian_z!),
         options...,
     )
 
