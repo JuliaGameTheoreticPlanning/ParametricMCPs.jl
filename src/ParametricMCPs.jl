@@ -1,4 +1,4 @@
-module DifferentiableMCPs
+module ParametricMCPs
 
 using ChainRulesCore: ChainRulesCore
 using LinearAlgebra: LinearAlgebra

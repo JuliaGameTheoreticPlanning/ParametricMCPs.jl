@@ -1,7 +1,7 @@
-# DifferentiableMCPs
+# ParametricMCPs
 
-[![CI](https://github.com/lassepe/DifferentiableMCPs.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/lassepe/DifferentiableMCPs.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/lassepe/DifferentiableMCPs.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/lassepe/DifferentiableMCPs.jl)
+[![CI](https://github.com/lassepe/ParametricMCPs.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/lassepe/ParametricMCPs.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/lassepe/ParametricMCPs.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/lassepe/ParametricMCPs.jl)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 
 This packages provide a generic, differentiable mathematical programming layer by compiling mixed complementarity problems (MCPs) parameterized by a "runtime"-parameter vector. The resulting `ParametricMCP` can solved for different parameter instantiations using `solve(problem, paramters)` and the `solve` routine is made differentiable via `ChainRulesCore`.
@@ -11,7 +11,7 @@ This packages provide a generic, differentiable mathematical programming layer b
 This package is not yet registered. For now, simply install it as git dependency (and don't forget to check-in you `Manifest.toml` if you do).
 
 ```julia
-] add https://github.com/lassepe/DifferentiableMCPs.jl
+] add https://github.com/lassepe/ParametricMCPs.jl
 ```
 
 ## Quickstart by Example
@@ -19,7 +19,7 @@ This package is not yet registered. For now, simply install it as git dependency
 Simple forward computation:
 
 ```julia
-using DifferentiableMCPs
+using ParametricMCPs
 
 # setup a simple MCP which represents a QP with
 # - cost: sum((z[1:2] - θ).^2)
@@ -41,7 +41,7 @@ using your favourite ad-framework, e.g., Zygote:
 using Zygote
 
 function dummy_pipeline(θ)
-    solution = DifferentiableMCPs.solve(problem, θ)
+    solution = ParametricMCPs.solve(problem, θ)
     sum(solution.z .^ 2)
 end
 

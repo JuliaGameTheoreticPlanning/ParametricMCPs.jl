@@ -57,7 +57,7 @@ function solve(problem::ParametricMCP, θ::AbstractVector{<:ForwardDiff.Dual{T}}
     # forward pass
     solution = solve(problem, θ_v; kwargs...)
     # backward pass
-    ∂z∂θ = DifferentiableMCPs._solve_jacobian_θ(problem, solution, θ_v)
+    ∂z∂θ = ParametricMCPs._solve_jacobian_θ(problem, solution, θ_v)
     # downstream gradient
     z_p = ∂z∂θ * θ_p
     # glue forward and backward pass together into dual number types
