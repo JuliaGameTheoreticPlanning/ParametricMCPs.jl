@@ -14,6 +14,12 @@ This package is not yet registered. For now, simply install it as git dependency
 ] add https://github.com/lassepe/ParametricMCPs.jl
 ```
 
+This package uses the proprietary PATH solver under the heed (via [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)).
+Therefore, you will need a license key to solve larger problems.
+However, by courtesy of Steven Dirkse, Michael Ferris, and Tudd Munson,
+[temporary licenses are available free of charge](https://pages.cs.wisc.edu/~ferris/path.html).
+Please consult the documentation of [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl) to learn about loading the license key.
+
 ## Quickstart by Example
 
 Simple forward computation:
@@ -47,3 +53,13 @@ end
 
 Zygote.gradient(dummy_pipeline, some_parameter)
 ```
+
+## Acknowledgements
+
+This package is effectively a thin wrapper around the great work of other people.
+Special thanks goes to the maintainers of the following packages:
+
+- [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)
+- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
+- [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
+- [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
