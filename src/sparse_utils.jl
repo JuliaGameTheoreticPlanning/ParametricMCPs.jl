@@ -13,7 +13,6 @@ end
 
 (f::SparseFunction)(args...) = f._f(args...)
 SparseArrays.nnz(f::SparseFunction) = length(f.rows)
-constant_entries(f::SparseFunction) = f.rows .== f.cols
 
 function get_result_buffer(f::SparseFunction)
     data = zeros(SparseArrays.nnz(f))

@@ -29,6 +29,7 @@ function solve(
         silent = !verbose,
         nnz = SparseArrays.nnz(jacobian_z!),
         jacobian_structure_constant = true,
+        jacobian_linear_elements = jacobian_z!.constant_entries,
         options...,
     )
 
