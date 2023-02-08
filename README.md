@@ -34,6 +34,7 @@ using ParametricMCPs
 f(z, θ) = [2z[1:2] - z[3:4] - 2θ; z[1:2]]
 lower_bounds = [-Inf, -Inf, 0, 0]
 upper_bounds = [Inf, Inf, Inf, Inf]
+parameter_dimension = 2
 problem = ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
 
 some_parameter = [1.0, 2.0]
