@@ -28,6 +28,7 @@ function solve(
         initial_guess;
         silent = !verbose,
         nnz = SparseArrays.nnz(jacobian_z!),
+        jacobian_structure_constant = true,
         options...,
     )
 

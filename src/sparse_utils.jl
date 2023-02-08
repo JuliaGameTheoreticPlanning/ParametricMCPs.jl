@@ -3,9 +3,17 @@ struct SparseFunction{T}
     rows::Vector{Int}
     cols::Vector{Int}
     size::Tuple{Int,Int}
+    constant_entries::Vector{Int}
+    function SparseFunction(_f::T, rows, cols, size, constant_entries = Int[]) where {T}
+        length(constant_entries) <= length(rows) ||
+            throw(ArgumentError("More constant entries than non-zero entries."))
+        new{T}(_f, rows, cols, size, constant_entries)
+    end
 end
+
 (f::SparseFunction)(args...) = f._f(args...)
 SparseArrays.nnz(f::SparseFunction) = length(f.rows)
+constant_entries(f::SparseFunction) = f.rows .== f.cols
 
 function get_result_buffer(f::SparseFunction)
     data = zeros(SparseArrays.nnz(f))
