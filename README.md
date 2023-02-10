@@ -8,13 +8,14 @@ This packages provide a generic, differentiable mathematical programming layer b
 
 ## Installation
 
-This package is not yet registered. For now, simply install it as git dependency (and don't forget to check-in you `Manifest.toml` if you do).
+ParametricMCPs is a registered package.
+Thus, installation is as simple as:
 
 ```julia
-] add https://github.com/lassepe/ParametricMCPs.jl
+] add ParametricMCPs
 ```
 
-This package uses the proprietary PATH solver under the heed (via [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)).
+This package uses the proprietary PATH solver under the hood (via [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)).
 Therefore, you will need a license key to solve larger problems.
 However, by courtesy of Steven Dirkse, Michael Ferris, and Tudd Munson,
 [temporary licenses are available free of charge](https://pages.cs.wisc.edu/~ferris/path.html).
