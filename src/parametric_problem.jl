@@ -70,7 +70,16 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
             expression = Val{false},
         )[2]
         rows, cols, _ = SparseArrays.findnz(jacobian_z_symbolic)
-        SparseFunction(rows, cols, size(jacobian_z_symbolic)) do result, z, θ
+
+        constant_entries = let
+            _z_syms = Symbolics.tosymbol.(z_symbolic)
+            findall(SparseArrays.nonzeros(jacobian_z_symbolic)) do v
+                _vars_syms = Symbolics.tosymbol.(Symbolics.get_variables(v))
+                isempty(intersect(_vars_syms, _z_syms))
+            end
+        end
+
+        SparseFunction(rows, cols, size(jacobian_z_symbolic), constant_entries) do result, z, θ
             _f!(result, [z; θ])
         end
     end

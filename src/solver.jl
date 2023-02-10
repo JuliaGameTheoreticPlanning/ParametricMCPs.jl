@@ -4,6 +4,8 @@ function solve(
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
     warn_on_convergence_failure = true,
+    enable_presolve = true,
+    jacobian_data_contiguous = true,
     options...,
 )
     (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
@@ -20,6 +22,8 @@ function solve(
         Cint(0)
     end
 
+    jacobian_linear_elements =
+        enable_presolve ? jacobian_z!.constant_entries : empty(jacobian_z!.constant_entries)
     status, z, info = PATHSolver.solve_mcp(
         F,
         J,
@@ -28,6 +32,9 @@ function solve(
         initial_guess;
         silent = !verbose,
         nnz = SparseArrays.nnz(jacobian_z!),
+        jacobian_structure_constant = true,
+        jacobian_data_contiguous = jacobian_data_contiguous,
+        jacobian_linear_elements = jacobian_linear_elements,
         options...,
     )
 
