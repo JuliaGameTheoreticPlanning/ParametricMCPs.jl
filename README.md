@@ -65,3 +65,10 @@ Special thanks goes to the maintainers of the following packages:
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
 - [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
+
+## Related Packages
+
+For some specialized, closely related applications, you may want to consider the following packages (all of which also provide differentiation rules):
+
+- [TensorGames.jl](https://github.com/forrestlaine/TensorGames.jl) solves finite N-player normal-form games.
+- [DifferentiableTrajectoryOptimization.jl](https://github.com/lassepe/DifferentiableTrajectoryOptimization.jl) solves parametric (single-player) trajectory optimization problems with an interface that's very similar to ParametricMCPs.jl. Beyond a PATH the PATH backend, this package also supports IPOPT and OSQP.
