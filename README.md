@@ -71,4 +71,4 @@ Special thanks goes to the maintainers of the following packages:
 For some specialized, closely related applications, you may want to consider the following packages (all of which also provide differentiation rules):
 
 - [TensorGames.jl](https://github.com/forrestlaine/TensorGames.jl) solves finite N-player normal-form games.
-- [DifferentiableTrajectoryOptimization.jl](https://github.com/lassepe/DifferentiableTrajectoryOptimization.jl) solves parametric (single-player) trajectory optimization problems with an interface that's very similar to ParametricMCPs.jl. Beyond a PATH the PATH backend, this package also supports IPOPT and OSQP.
+- [DifferentiableTrajectoryOptimization.jl](https://github.com/lassepe/DifferentiableTrajectoryOptimization.jl) solves parametric (single-player) trajectory optimization problems. The interface is very similar to ParametricMCPs.jl. Beyond the PATH solver, this package also supports backends like IPOPT and OSQP.
