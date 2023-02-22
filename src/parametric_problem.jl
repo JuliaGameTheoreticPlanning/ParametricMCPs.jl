@@ -24,15 +24,6 @@ get_problem_size(problem::ParametricMCP) = length(problem.lower_bounds)
 "Returns the number of decision variables for this problem."
 get_parameter_dimension(problem::ParametricMCP) = problem.parameter_dimension
 
-"Get the (sparse) linear indices of all entries that are constant in the symbolic matrix M w.r.t. symbolic vector z."
-function get_constant_entries(M_symbolic, z_symbolic)
-    _z_syms = Symbolics.tosymbol.(z_symbolic)
-    findall(SparseArrays.nonzeros(M_symbolic)) do v
-        _vars_syms = Symbolics.tosymbol.(Symbolics.get_variables(v))
-        isempty(intersect(_vars_syms, _z_syms))
-    end
-end
-
 """
 The main constructor for compiling a `ParametricMCP` from
 
