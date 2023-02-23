@@ -16,9 +16,8 @@ function solve(
     end
 
     function J(n, nnz, z, col, len, row, data)
-        result = get_result_buffer(jacobian_z!)
-        jacobian_z!(result, z, θ)
-        _coo_from_sparse!(col, len, row, data, result)
+        jacobian_z!(jacobian_z!.result_buffer, z, θ)
+        _coo_from_sparse!(col, len, row, data, jacobian_z!.result_buffer)
         Cint(0)
     end
 
