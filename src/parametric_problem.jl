@@ -38,7 +38,14 @@ Note, this constructor uses `Symbolics.jl` to compile the relevant low-level fun
 where that is strictly infeasible, you can still use the low-level constructor to generate a
 `ParametricMCP`. In general, however, the use of this convenience construtor is advised.
 """
-function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
+function ParametricMCP(
+    f,
+    lower_bounds,
+    upper_bounds,
+    parameter_dimension;
+    compute_sensitivities = true,
+)
+    # TODO
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
     problem_size = length(lower_bounds)
@@ -49,6 +56,31 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         Symbolics.scalarize
 
     f_symbolic = f(z_symbolic, θ_symbolic)
+
+    ParametricMCP(
+        f_symbolic,
+        z_symbolic,
+        θ_symbolic,
+        lower_bounds,
+        upper_bounds;
+        compute_sensitivities,
+    )
+end
+
+"""
+Symbolic version of the ParmetricMCP constructor. If you have `f` and `z` already in terms of symbolic variables, use this.
+"""
+function ParametricMCP(
+    f_symbolic::Vector{Symbolics.Num},
+    z_symbolic::Vector{Symbolics.Num},
+    θ_symbolic::Vector{Symbolics.Num},
+    lower_bounds,
+    upper_bounds;
+    compute_sensitivities = true,
+)
+    length(lower_bounds) == length(upper_bounds) ||
+        throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
+    problem_size = length(lower_bounds)
     length(f_symbolic) == problem_size || throw(
         ArgumentError(
             "The output lenght of `f` is inconsistent with `lower_bounds` and `upper_bounds`.",
@@ -77,17 +109,22 @@ function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
         end
     end
 
-    jacobian_θ! = let
-        _f! = Symbolics.build_function(
-            jacobian_θ_symbolic,
-            [z_symbolic; θ_symbolic];
-            expression = Val{false},
-        )[2]
-        rows, cols, _ = SparseArrays.findnz(jacobian_θ_symbolic)
-        SparseFunction(rows, cols, size(jacobian_θ_symbolic)) do result, z, θ
-            _f!(result, [z; θ])
+    if compute_sensitivities
+        jacobian_θ! = let
+            _f! = Symbolics.build_function(
+                jacobian_θ_symbolic,
+                [z_symbolic; θ_symbolic];
+                expression = Val{false},
+            )[2]
+            rows, cols, _ = SparseArrays.findnz(jacobian_θ_symbolic)
+            SparseFunction(rows, cols, size(jacobian_θ_symbolic)) do result, z, θ
+                _f!(result, [z; θ])
+            end
         end
+    else
+        jacobian_θ! = nothing
     end
 
+    parameter_dimension = length(θ_symbolic)
     ParametricMCP(f!, jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds, parameter_dimension)
 end
