@@ -45,12 +45,11 @@ function ParametricMCP(
     parameter_dimension;
     compute_sensitivities = true,
 )
-    # TODO
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
     problem_size = length(lower_bounds)
 
-    # setup the problem symblically
+    # setup the problem symbolically
     z_symbolic, θ_symbolic =
         Symbolics.@variables(z_symbolic[1:problem_size], θ_symbolic[1:parameter_dimension]) .|>
         Symbolics.scalarize
@@ -71,13 +70,97 @@ function ParametricMCP(
     )
 end
 
+function ParametricMCP_new(
+    f,
+    lower_bounds,
+    upper_bounds,
+    parameter_dimension;
+    compute_sensitivities = true,
+)
+    length(lower_bounds) == length(upper_bounds) ||
+        throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
+    problem_size = length(lower_bounds)
+
+    # setup the problem symbolically
+    z_node = FD.make_variables(:z, problem_size)
+    θ_node = FD.make_variables(:θ, parameter_dimension)
+    f_node = f(z_node, θ_node)
+
+    ParametricMCP(f_node, z_node, θ_node, lower_bounds, upper_bounds; compute_sensitivities)
+end
+
 """
-Symbolic version of the ParmetricMCP constructor. If you have `f` and `z` already in terms of symbolic variables, use this.
+FastDifferentation.jl version of the ParmetricMCP constructor. If you have `f` and `z` already in terms of `FastDifferentation.Node`, use this.
+
+Dev notes:
+- This may become the new default beckend since it promises to be faster than Symbolics.jl. (both in terms of compilation/code-gen time and execution time).
+- We may be able to convert the Symbolics.jl representation in the future via `FDConversion.jl`
 """
 function ParametricMCP(
-    f_symbolic::Vector{Symbolics.Num},
-    z_symbolic::Vector{Symbolics.Num},
-    θ_symbolic::Vector{Symbolics.Num},
+    f_node::Vector{<:FD.Node},
+    z_node::Vector{<:FD.Node},
+    θ_node::Vector{<:FD.Node},
+    lower_bounds,
+    upper_bounds;
+    compute_sensitivities = true,
+)
+    length(lower_bounds) == length(upper_bounds) ||
+        throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
+    problem_size = length(lower_bounds)
+    length(f_node) == problem_size || throw(
+        ArgumentError(
+            "The output lenght of `f` is inconsistent with `lower_bounds` and `upper_bounds`.",
+        ),
+    )
+
+    jacobian_z_node = FD.sparse_jacobian(f_node, z_node)
+    jacobian_θ_node = FD.sparse_jacobian(f_node, θ_node)
+
+    # compile all the symbolic expressions into callable julia code
+    f! = let
+        # The multi-arg version of `make_function` is broken so we concatenate to a single arg here
+        _f! = FD.make_function(f_node, [z_node; θ_node]; in_place = true)
+        # FastDifferentation has a reverse convention of where the result is so we have to
+        # streamline it here...
+        (result, z, θ) -> _f!([z; θ], result)
+    end
+
+    # same as above but for the Jacobian in z
+    jacobian_z! = let
+        _jacobian_z! = FD.make_function(jacobian_z_node, [z_node; θ_node]; in_place = true)
+        rows, cols, _ = SparseArrays.findnz(jacobian_z_node)
+        # TODO: constant entry detection
+        constant_entries = Int[]
+        SparseFunction(rows, cols, size(jacobian_z_node), constant_entries) do result, z, θ
+            _jacobian_z!([z; θ], result)
+        end
+    end
+
+    if compute_sensitivities
+        jacobian_θ! = let
+            _jacobian_θ! = FD.make_function(jacobian_θ_node, [z_node; θ_node]; in_place = true)
+            rows, cols, _ = SparseArrays.findnz(jacobian_θ_node)
+            # TODO: constant entry detection
+            constant_entries = Int[]
+            SparseFunction(rows, cols, size(jacobian_θ_node), constant_entries) do result, z, θ
+                _jacobian_θ!([z; θ], result)
+            end
+        end
+    else
+        jacobian_θ! = nothing
+    end
+
+    parameter_dimension = length(θ_node)
+    ParametricMCP(f!, jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds, parameter_dimension)
+end
+
+"""
+Symbolics.jl version of the ParmetricMCP constructor. If you have `f` and `z` already in terms of symbolic variables, use this.
+"""
+function ParametricMCP(
+    f_symbolic::Vector{<:Symbolics.Num},
+    z_symbolic::Vector{<:Symbolics.Num},
+    θ_symbolic::Vector{<:Symbolics.Num},
     lower_bounds,
     upper_bounds;
     compute_sensitivities = true,
