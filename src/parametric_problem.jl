@@ -113,9 +113,6 @@ function ParametricMCP(
         ),
     )
 
-    jacobian_z_node = FD.sparse_jacobian(f_node, z_node)
-    jacobian_θ_node = FD.sparse_jacobian(f_node, θ_node)
-
     # compile all the symbolic expressions into callable julia code
     f! = let
         # The multi-arg version of `make_function` is broken so we concatenate to a single arg here
@@ -125,6 +122,7 @@ function ParametricMCP(
 
     # same as above but for the Jacobian in z
     jacobian_z! = let
+        jacobian_z_node = FD.sparse_jacobian(f_node, z_node)
         _jacobian_z! = FD.make_function(jacobian_z_node, [z_node; θ_node]; in_place = true)
         rows, cols, _ = SparseArrays.findnz(jacobian_z_node)
         # TODO: constant entry detection
@@ -136,6 +134,7 @@ function ParametricMCP(
 
     if compute_sensitivities
         jacobian_θ! = let
+            jacobian_θ_node = FD.sparse_jacobian(f_node, θ_node)
             _jacobian_θ! = FD.make_function(jacobian_θ_node, [z_node; θ_node]; in_place = true)
             rows, cols, _ = SparseArrays.findnz(jacobian_θ_node)
             # TODO: constant entry detection
