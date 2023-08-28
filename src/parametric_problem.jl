@@ -120,9 +120,7 @@ function ParametricMCP(
     f! = let
         # The multi-arg version of `make_function` is broken so we concatenate to a single arg here
         _f! = FD.make_function(f_node, [z_node; θ_node]; in_place = true)
-        # FastDifferentation has a reverse convention of where the result is so we have to
-        # streamline it here...
-        (result, z, θ) -> _f!([z; θ], result)
+        (result, z, θ) -> _f!(result, [z; θ])
     end
 
     # same as above but for the Jacobian in z
@@ -132,7 +130,7 @@ function ParametricMCP(
         # TODO: constant entry detection
         constant_entries = Int[]
         SparseFunction(rows, cols, size(jacobian_z_node), constant_entries) do result, z, θ
-            _jacobian_z!([z; θ], result)
+            _jacobian_z!(result, [z; θ])
         end
     end
 
@@ -143,7 +141,7 @@ function ParametricMCP(
             # TODO: constant entry detection
             constant_entries = Int[]
             SparseFunction(rows, cols, size(jacobian_θ_node), constant_entries) do result, z, θ
-                _jacobian_θ!([z; θ], result)
+                _jacobian_θ!(result, [z; θ])
             end
         end
     else
