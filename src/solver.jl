@@ -4,7 +4,7 @@ function solve(
     initial_guess = zeros(get_problem_size(problem)),
     verbose = false,
     warn_on_convergence_failure = true,
-    enable_presolve = true,
+    enable_presolve = false,
     jacobian_data_contiguous = true,
     options...,
 )
