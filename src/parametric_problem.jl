@@ -27,16 +27,16 @@ get_parameter_dimension(problem::ParametricMCP) = problem.parameter_dimension
 """
 The main constructor for compiling a `ParametricMCP` from
 
-- `f`: callabale as `f(z, θ)` that maps a lenght `n` vector of decision variables `z` and a \
-parameter vector `θ` of size `parameter_dimension` to an lenght `n` vector output.
-- `lower_bounds`: A lenght `n` vector of element-wise lower bounds on the decision variables `z`.
+- `f`: callable as `f(z, θ)` that maps a length `n` vector of decision variables `z` and a \
+parameter vector `θ` of size `parameter_dimension` to an length `n` vector output.
+- `lower_bounds`: A length `n` vector of element-wise lower bounds on the decision variables `z`.
 - `upper_bounds`: A length `n` vector of element-wise upper bounds on the decision variables `z`.
 - `parameter_dimension`: the size of the parameter vector `θ` in `f`.
 
 Note, this constructor uses `Symbolics.jl` to compile the relevant low-level functions. Therefore,
 `f` must be implemented in a sufficiently generic way that supports symbolic evaluation. In cases
 where that is strictly infeasible, you can still use the low-level constructor to generate a
-`ParametricMCP`. In general, however, the use of this convenience construtor is advised.
+`ParametricMCP`. In general, however, the use of this convenience constructor is advised.
 """
 function ParametricMCP(
     f,
@@ -93,7 +93,7 @@ end
 FastDifferentation.jl version of the ParmetricMCP constructor. If you have `f` and `z` already in terms of `FastDifferentation.Node`, use this.
 
 Dev notes:
-- This may become the new default beckend since it promises to be faster than Symbolics.jl. (both in terms of compilation/code-gen time and execution time).
+- This may become the new default back-end since it promises to be faster than Symbolics.jl. (both in terms of compilation/code-gen time and execution time).
 - We may be able to convert the Symbolics.jl representation in the future via `FDConversion.jl`
 """
 function ParametricMCP(
