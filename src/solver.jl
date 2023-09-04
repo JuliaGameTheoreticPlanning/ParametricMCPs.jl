@@ -31,8 +31,8 @@ function solve(
     status, z, info = PATHSolver.solve_mcp(
         F,
         J,
-        lower_bounds,
-        upper_bounds,
+        lower_bounds(θ),
+        upper_bounds(θ),
         initial_guess;
         silent = !verbose,
         nnz = SparseArrays.nnz(jacobian_z!),
