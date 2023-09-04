@@ -33,17 +33,13 @@ This implementation has been extracted from \
 """
 function _coo_from_sparse!(col, len, row, data, M)
     @assert length(col) == length(len) == size(M, 1)
-    @assert length(row) == length(data)
+    @assert length(row) == length(data) == SparseArrays.nnz(M)
     n = length(col)
-    for i in 1:n
-        col[i] = M.colptr[i]
-        len[i] = M.colptr[i + 1] - M.colptr[i]
-    end
-    for (i, v) in enumerate(SparseArrays.rowvals(M))
-        row[i] = v
-    end
-    for (i, v) in enumerate(SparseArrays.nonzeros(M))
-        data[i] = v
+    @inbounds begin
+        col .= @view M.colptr[1:n]
+        len .= diff(M.colptr)
+        row .= SparseArrays.rowvals(M)
+        data .= SparseArrays.nonzeros(M)
     end
 end
 
