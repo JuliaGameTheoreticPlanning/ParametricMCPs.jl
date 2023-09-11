@@ -39,7 +39,14 @@ parameter_dimension = 2
 problem = ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
 
 some_parameter = [1.0, 2.0]
-solve(problem, some_parameter)
+solution = solve(problem, some_parameter)
+
+# You can also warm-start the solver with an initial guess.
+# For example, say that we want to solve the problem at a slightly perturbed parameter value, `some_other_parameter = some_parameter .+ 0.01`.
+# Here, we can warm-start the solver by passing in the old solution as an intial guess.
+# This is particularly handy for online optimization as in receding-horizon applications.
+some_other_parameter = some_parameter .+ 0.01
+other_solution = solve(problem, some_other_parameter; initial_guess = solution.z)
 ```
 
 Since we provide differentiation rules via `ChainRulesCore`, the solver can be
