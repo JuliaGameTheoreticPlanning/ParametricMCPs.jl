@@ -81,6 +81,7 @@ function ParametricMCP(
     lower_bounds,
     upper_bounds;
     compute_sensitivities = true,
+    parallel = nothing,
 )
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
@@ -95,7 +96,12 @@ function ParametricMCP(
 
     # compile all the symbolic expressions into callable julia code
     f! = let
-        _f! = Symbolics.build_function(f_symbolic, [z_symbolic; θ_symbolic]; expression = Val{false})[2]
+        _f! = Symbolics.build_function(
+            f_symbolic,
+            [z_symbolic; θ_symbolic];
+            expression = Val{false},
+            parallel,
+        )[2]
         (result, z, θ) -> _f!(result, [z; θ])
     end
 
@@ -104,6 +110,7 @@ function ParametricMCP(
             jacobian_z_symbolic,
             [z_symbolic; θ_symbolic];
             expression = Val{false},
+            parallel,
         )[2]
         rows, cols, _ = SparseArrays.findnz(jacobian_z_symbolic)
 
@@ -119,6 +126,7 @@ function ParametricMCP(
                 jacobian_θ_symbolic,
                 [z_symbolic; θ_symbolic];
                 expression = Val{false},
+                parallel,
             )[2]
             rows, cols, _ = SparseArrays.findnz(jacobian_θ_symbolic)
             SparseFunction(rows, cols, size(jacobian_θ_symbolic)) do result, z, θ
