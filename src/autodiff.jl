@@ -2,6 +2,8 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     (; jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds) = problem
     z_star = solution.z
 
+    !isnothing(jacobian_θ!) || throw(ArgumentError("Missing sensitivities. Set `compute_sensitivities = true` when constructing the ParametricMCP."))
+
     inactive_indices = let
         lower_inactive = z_star .>= (lower_bounds .+ active_tolerance)
         upper_inactive = z_star .<= (upper_bounds .- active_tolerance)
