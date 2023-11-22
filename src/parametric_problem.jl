@@ -55,6 +55,10 @@ function ParametricMCP(
         Symbolics.@variables(z_symbolic[1:problem_size], θ_symbolic[1:parameter_dimension]) .|>
         Symbolics.scalarize
 
+    if isempty(θ_symbolic)
+        θ_symbolic = Symbolics.Num[]
+    end
+
     f_symbolic = f(z_symbolic, θ_symbolic)
 
     ParametricMCP(
