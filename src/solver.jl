@@ -11,7 +11,7 @@ function solve(
     length(initial_guess) == get_problem_size(problem) ||
         throw(ArgumentError("initial guess must have length $(get_problem_size(problem))"))
     length(θ) == get_parameter_dimension(problem) ||
-        throw(ArgumentError("θ must have length $(get_parameter_dimension(problem))"))
+        throw(ArgumentError("θ must have length $(get_parameter_dimension(problem)), got $(θ)"))
 
     (; f!, jacobian_z!, lower_bounds, upper_bounds) = problem
 
