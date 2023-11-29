@@ -1,12 +1,9 @@
 module ParametricMCPs
 
-using ChainRulesCore: ChainRulesCore
 using LinearAlgebra: LinearAlgebra
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
 using Symbolics: Symbolics
-using ForwardDiff: ForwardDiff
-
 
 include("sparse_utils.jl")
 
@@ -17,5 +14,9 @@ export solve
 
 include("autodiff.jl")
 
+if !isdefined(Base, :get_extension)
+    include("../ext/ChainRulesCoreExt.jl")
+    include("../ext/ForwardDiffExt.jl")
+end
 
 end
