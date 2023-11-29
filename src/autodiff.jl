@@ -2,7 +2,11 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     (; jacobian_z!, jacobian_θ!, lower_bounds, upper_bounds) = problem
     z_star = solution.z
 
-    !isnothing(jacobian_θ!) || throw(ArgumentError("Missing sensitivities. Set `compute_sensitivities = true` when constructing the ParametricMCP."))
+    !isnothing(jacobian_θ!) || throw(
+        ArgumentError(
+            "Missing sensitivities. Set `compute_sensitivities = true` when constructing the ParametricMCP.",
+        ),
+    )
 
     inactive_indices = let
         lower_inactive = z_star .>= (lower_bounds .+ active_tolerance)
@@ -31,39 +35,4 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
         LinearAlgebra.qr(-collect(∂f_reduced∂z_reduced), LinearAlgebra.ColumnNorm()) \
         collect(∂f_reduce∂θ)
     ∂z∂θ
-end
-
-function ChainRulesCore.rrule(::typeof(solve), problem, θ; kwargs...)
-    solution = solve(problem, θ; kwargs...)
-    project_to_θ = ChainRulesCore.ProjectTo(θ)
-
-    function solve_pullback(∂solution)
-        no_grad_args = (; ∂self = ChainRulesCore.NoTangent(), ∂problem = ChainRulesCore.NoTangent())
-
-        ∂θ = ChainRulesCore.@thunk let
-            ∂z∂θ = _solve_jacobian_θ(problem, solution, θ)
-            ∂l∂z = ∂solution.z
-            project_to_θ(∂z∂θ' * ∂l∂z)
-        end
-
-        no_grad_args..., ∂θ
-    end
-
-    solution, solve_pullback
-end
-
-function solve(problem::ParametricMCP, θ::AbstractVector{<:ForwardDiff.Dual{T}}; kwargs...) where {T}
-    # strip off the duals:
-    θ_v = ForwardDiff.value.(θ)
-    θ_p = ForwardDiff.partials.(θ)
-    # forward pass
-    solution = solve(problem, θ_v; kwargs...)
-    # backward pass
-    ∂z∂θ = ParametricMCPs._solve_jacobian_θ(problem, solution, θ_v)
-    # downstream gradient
-    z_p = ∂z∂θ * θ_p
-    # glue forward and backward pass together into dual number types
-    z_d = ForwardDiff.Dual{T}.(solution.z, z_p)
-
-    (; z=z_d, solution.status, solution.info)
 end

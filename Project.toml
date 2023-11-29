@@ -11,6 +11,14 @@ PATHSolver = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
+[weakdeps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+
+[extensions]
+ChainRulesCoreExt = "ChainRulesCore"
+ForwardDiffExt = "ForwardDiff"
+
 [compat]
 ChainRulesCore = "1"
 ForwardDiff = "0.10"
