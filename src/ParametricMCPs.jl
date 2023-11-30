@@ -4,6 +4,7 @@ using LinearAlgebra: LinearAlgebra
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
 using Symbolics: Symbolics
+using EnzymeCore: EnzymeCore, EnzymeRules
 
 include("sparse_utils.jl")
 

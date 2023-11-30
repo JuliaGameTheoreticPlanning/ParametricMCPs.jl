@@ -4,6 +4,7 @@ using Random: Random
 using LinearAlgebra: norm
 using Zygote: Zygote
 using FiniteDiff: FiniteDiff
+using Enzyme: Enzyme
 
 @testset "ParametricMCPs.jl" begin
     rng = Random.MersenneTwister(1)
@@ -15,7 +16,13 @@ using FiniteDiff: FiniteDiff
     lower_bounds = [-Inf, -Inf, 0, 0]
     upper_bounds = [Inf, Inf, Inf, Inf]
     problem = ParametricMCPs.ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
-    problem_no_jacobian = ParametricMCPs.ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension; compute_sensitivities = false)
+    problem_no_jacobian = ParametricMCPs.ParametricMCP(
+        f,
+        lower_bounds,
+        upper_bounds,
+        parameter_dimension;
+        compute_sensitivities=false,
+    )
 
     feasible_parameters = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [rand(rng, 2) for _ in 1:10]...]
     infeasible_parameters = -feasible_parameters
@@ -32,27 +39,30 @@ using FiniteDiff: FiniteDiff
         end
     end
 
-    @testset "backward pass" begin
+    function get_pipeline(problem)
         function dummy_pipeline(θ)
             solution = ParametricMCPs.solve(problem, θ)
             sum(solution.z .^ 2)
         end
+    end
 
+    @testset "backward pass" begin
+        dummy_pipeline = get_pipeline(problem)
         for θ in [feasible_parameters; infeasible_parameters]
-            ∇_autodiff_reverse = only(Zygote.gradient(dummy_pipeline, θ))
-            ∇_autodiff_forward = only(Zygote.gradient(θ -> Zygote.forwarddiff(dummy_pipeline, θ), θ))
+            ∇_zygote_reverse = only(Zygote.gradient(dummy_pipeline, θ))
+            ∇_zygote_forward =
+                only(Zygote.gradient(θ -> Zygote.forwarddiff(dummy_pipeline, θ), θ))
+            #Enzyme.jacobian(Enzyme.Reverse, dummy_pipeline, Enzyme.Duplicated([1.0, 1.0], [0.0, 0.0]))
+            ∇_enzyme_forward = Enzyme.jacobian(Enzyme.Forward, dummy_pipeline, θ) |> vec
             ∇_finitediff = FiniteDiff.finite_difference_gradient(dummy_pipeline, θ)
-            @test isapprox(∇_autodiff_reverse, ∇_finitediff; atol = 1e-4)
-            @test isapprox(∇_autodiff_reverse, ∇_autodiff_forward; atol = 1e-4)
+            @test isapprox(∇_zygote_reverse, ∇_finitediff; atol=1e-4)
+            @test isapprox(∇_zygote_forward, ∇_finitediff; atol=1e-4)
+            @test isapprox(∇_enzyme_forward, ∇_finitediff; atol=1e-4)
         end
-    end   
-    
-    @testset "missing jacobian" begin
-        function dummy_pipeline(θ, problem)
-            solution = ParametricMCPs.solve(problem, θ)
-            sum(solution.z .^ 2)
-        end
+    end
 
-        @test_throws ArgumentError Zygote.gradient(θ -> dummy_pipeline(θ, problem_no_jacobian), feasible_parameters[1])
-    end 
+    @testset "missing jacobian" begin
+        dummy_pipeline = get_pipeline(problem_no_jacobian)
+        @test_throws ArgumentError Zygote.gradient(dummy_pipeline, feasible_parameters[1],)
+    end
 end
