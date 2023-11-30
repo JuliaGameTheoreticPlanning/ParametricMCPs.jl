@@ -1,10 +1,8 @@
 module ParametricMCPs
 
-using LinearAlgebra: LinearAlgebra
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
 using Symbolics: Symbolics
-using EnzymeCore: EnzymeCore, EnzymeRules
 
 include("sparse_utils.jl")
 
@@ -13,11 +11,6 @@ export ParametricMCP, get_parameter_dimension, get_problem_size
 include("solver.jl")
 export solve
 
-include("autodiff.jl")
-
-if !isdefined(Base, :get_extension)
-    include("../ext/ChainRulesCoreExt.jl")
-    include("../ext/ForwardDiffExt.jl")
-end
+include("AutoDiff.jl")
 
 end
