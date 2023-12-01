@@ -46,46 +46,137 @@ function _solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     ∂z∂θ
 end
 
+const EnzymeBatchedAnnotation = Union{EnzymeCore.BatchDuplicated,EnzymeCore.BatchDuplicatedNoNeed}
+const EnzymeNoneedAnnotation = Union{EnzymeCore.DuplicatedNoNeed,EnzymeCore.BatchDuplicatedNoNeed}
+
 function EnzymeRules.forward(
     func::EnzymeCore.Const{typeof(ParametricMCPs.solve)},
     ::Type{ReturnType},
     problem::EnzymeCore.Annotation{<:ParametricMCPs.ParametricMCP},
     θ::EnzymeCore.Annotation;
     kwargs...,
-) where {ReturnType}
+) where {ReturnType<:EnzymeCore.Annotation}
+    # TODO: Enzyme sometime pass us the problem as non-const (why?). For now, skip the check.
+    #if !(problem isa EnzymeCore.Const)
+    #    throw(ArgumentError("""
+    #                        `problem` must be annotated `Enzyme.Const`.
+    #                        If you did not pass the non-const problem annotation yourself,
+    #                        consider filing an issue with ParametricMCPs.jl.
+    #                        """))
+    #end
+
+    if θ isa EnzymeCore.Const
+        throw(
+            ArgumentError(
+                """
+                `θ` was annotated `Enzyme.Const` which defeats the purpose of running AD.
+                If you did not pass the const θ annotation yourself,
+                consider filing an issue with ParametricMCPs.jl.
+                """,
+            ),
+        )
+    end
+
     # forward pass
     solution_val = func.val(problem.val, θ.val; kwargs...)
 
-    if ReturnType isa EnzymeCore.Const
+    if ReturnType <: EnzymeCore.Const
         return solution_val
     end
 
     # backward pass
-    ∂z∂θ_thunk = _solve_jacobian_θ(problem.val, solution_val, θ.val)
+    ∂z∂θ = _solve_jacobian_θ(problem.val, solution_val, θ.val)
+
+    if ReturnType <: EnzymeBatchedAnnotation
+        solution_dval = map(θ.dval) do θdval
+            _dval = deepcopy(solution_val)
+            _dval.z .= ∂z∂θ * θdval
+            _dval
+        end
+    else
+        # downstream gradient
+        dz = ∂z∂θ * θ.dval
+        solution_dval = deepcopy(solution_val)
+        solution_dval.z .= dz
+    end
+
+    if ReturnType <: EnzymeNoneedAnnotation
+        return solution_dval
+    end
+
+    if ReturnType <: EnzymeCore.Duplicated
+        return EnzymeCore.Duplicated(solution_val, solution_dval)
+    end
 
     if ReturnType <: EnzymeCore.BatchDuplicated
-        solution_dval = map(θ.dval) do θdval
-            (; solution_val..., z = ∂z∂θ_thunk * θdval)
-        end
         return EnzymeCore.BatchDuplicated(solution_val, solution_dval)
     end
 
-    if ReturnType <: EnzymeCore.BatchDuplicatedNoNeed
-        error("Not implemented. Please file an issue with ParametricMCPs.jl")
+    throw(ArgumentError("""
+                        Forward rule for ReturnType with annotation $(ReturnType) not implemented.
+                        Please file an issue with ParametricMCPs.jl.
+                        """))
+end
+
+function EnzymeRules.augmented_primal(
+    config::EnzymeRules.ConfigWidth{1},
+    func::EnzymeCore.Const{typeof(ParametricMCPs.solve)},
+    ::Type{<:EnzymeRules.Annotation},
+    problem::EnzymeCore.Annotation{<:ParametricMCPs.ParametricMCP},
+    θ::EnzymeCore.Annotation;
+    kwargs...,
+)
+    function copy_or_reuse(val, idx)
+        if EnzymeRules.overwritten(config)[idx] && ismutable(val)
+            return deepcopy(val)
+        end
+        val
     end
 
-    # downstream gradient
-    dz = ∂z∂θ_thunk * θ.dval
+    θval = copy_or_reuse(θ.val, 3)
+    res = func.val(problem.val, θval; kwargs...)
+    # backward pass
+    ∂z∂θ_thunk = () -> _solve_jacobian_θ(problem.val, res, θval)
 
-    solution_dval = (; solution_val..., z = dz)
+    dres = deepcopy(res)
+    dres.z .= 0.0
 
-    if ReturnType <: EnzymeCore.DuplicatedNoNeed
-        solution_dval = (; solution_val..., z = dz)
+    tape = (; ∂z∂θ_thunk, dres)
+
+    EnzymeRules.AugmentedReturn(res, dres, tape)
+end
+
+function EnzymeRules.reverse(
+    config,
+    func::EnzymeCore.Const{typeof(ParametricMCPs.solve)},
+    rt::Type{ReturnType}, # TODO: tighter type constraint
+    tape,
+    problem::EnzymeCore.Annotation{<:ParametricMCPs.ParametricMCP},
+    θ::EnzymeCore.Annotation;
+    kwargs...,
+) where {ReturnType}
+    println("reverse: $rt")
+
+    if θ isa EnzymeCore.Duplicated
+        ∂z∂θ = tape.∂z∂θ_thunk()
+        ∂l∂z = tape.dres.z
+        θ.dval .+= ∂z∂θ' * ∂l∂z
+    elseif !(θ isa EnzymeCore.Const)
+        throw(ArgumentError("""
+                            Reverse rule for θ with annotation $(typeof(θ)) not implemented.
+                            Please file an issue with ParametricMCPs.jl.
+                            """))
     end
 
-    @assert ReturnType <: EnzymeCore.Duplicated
+    if !(problem isa EnzymeCore.Const)
+        throw(ArgumentError("""
+                            `problem` must be annotated `Enzyme.Const`.
+                            If you did not pass the non-const problem annotation yourself,
+                            consider filing an issue with ParametricMCPs.jl.
+                            """))
+    end
 
-    EnzymeCore.Duplicated(solution_val, solution_dval)
+    (nothing, nothing)
 end
 
 function ChainRulesCore.rrule(::typeof(ParametricMCPs.solve), problem, θ; kwargs...)

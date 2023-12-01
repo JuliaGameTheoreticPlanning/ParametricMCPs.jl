@@ -21,7 +21,7 @@ using Enzyme: Enzyme
         lower_bounds,
         upper_bounds,
         parameter_dimension;
-        compute_sensitivities=false,
+        compute_sensitivities = false,
     )
 
     feasible_parameters = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [rand(rng, 2) for _ in 1:10]...]
@@ -39,30 +39,46 @@ using Enzyme: Enzyme
         end
     end
 
-    function get_pipeline(problem)
-        function dummy_pipeline(θ)
-            solution = ParametricMCPs.solve(problem, θ)
-            sum(solution.z .^ 2)
-        end
+    function dummy_pipeline(θ, problem)
+        solution = ParametricMCPs.solve(problem, θ)
+        sum(solution.z .^ 2)
     end
 
     @testset "backward pass" begin
-        dummy_pipeline = get_pipeline(problem)
         for θ in [feasible_parameters; infeasible_parameters]
-            ∇_zygote_reverse = only(Zygote.gradient(dummy_pipeline, θ))
-            ∇_zygote_forward =
-                only(Zygote.gradient(θ -> Zygote.forwarddiff(dummy_pipeline, θ), θ))
             #Enzyme.jacobian(Enzyme.Reverse, dummy_pipeline, Enzyme.Duplicated([1.0, 1.0], [0.0, 0.0]))
-            ∇_enzyme_forward = Enzyme.jacobian(Enzyme.Forward, dummy_pipeline, θ) |> vec
             ∇_finitediff = FiniteDiff.finite_difference_gradient(dummy_pipeline, θ)
-            @test isapprox(∇_zygote_reverse, ∇_finitediff; atol=1e-4)
-            @test isapprox(∇_zygote_forward, ∇_finitediff; atol=1e-4)
-            @test isapprox(∇_enzyme_forward, ∇_finitediff; atol=1e-4)
+
+            @testset "Zygote Reverse" begin
+                ∇_zygote_reverse = Zygote.gradient(θ) do θ
+                    dummy_pipeline(θ, problem)
+                end |> only
+                @test isapprox(∇_zygote_reverse, ∇_finitediff; atol = 1e-4)
+            end
+
+            @testset "Zygote Forward" begin
+                ∇_zygote_forward = Zygote.gradient(θ) do θ
+                    Zygote.forwarddiff(θ) do θ
+                        dummy_pipeline(θ, problem)
+                    end
+                end
+                @test isapprox(∇_zygote_forward, ∇_finitediff; atol = 1e-4)
+            end
+
+            @tesetset "Enzyme Forward" begin
+                ∇_enzyme_forward = Enzyme.gradient(Enzyme.Forward, dummy_pipeline, θ) |> collect
+                @test isapprox(∇_enzyme_forward, ∇_finitediff; atol = 1e-4)
+            end
+
+            @testset "Enzyme Reverse" begin
+                ∇_enzyme_reverse = Enzyme.gradient(Enzyme.Reverse, dummy_pipeline, θ) |> collect
+                @test isapprox(∇_enzyme_reverse, ∇_finitediff; atol = 1e-4)
+            end
         end
     end
 
     @testset "missing jacobian" begin
         dummy_pipeline = get_pipeline(problem_no_jacobian)
-        @test_throws ArgumentError Zygote.gradient(dummy_pipeline, feasible_parameters[1],)
+        @test_throws ArgumentError Zygote.gradient(dummy_pipeline, feasible_parameters[1])
     end
 end
