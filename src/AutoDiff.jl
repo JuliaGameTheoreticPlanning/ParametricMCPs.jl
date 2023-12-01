@@ -56,7 +56,7 @@ function EnzymeRules.forward(
     θ::EnzymeCore.Annotation;
     kwargs...,
 ) where {ReturnType<:EnzymeCore.Annotation}
-    # TODO: Enzyme sometime pass us the problem as non-const (why?). For now, skip the check.
+    # TODO: Enzyme sometimes passes us the problem as non-const (why?). For now, skip this check.
     #if !(problem isa EnzymeCore.Const)
     #    throw(ArgumentError("""
     #                        `problem` must be annotated `Enzyme.Const`.
