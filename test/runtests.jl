@@ -33,7 +33,7 @@ using Enzyme: Enzyme
             @test solution.z[1:2] ≈ θ
         end
 
-        for θ in feasible_parameters
+        for θ in infeasible_parameters
             solution = ParametricMCPs.solve(problem, θ)
             @test norm(solution.z[1:2] - θ) <= norm(θ)
         end

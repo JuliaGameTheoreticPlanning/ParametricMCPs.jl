@@ -42,6 +42,10 @@ function solve(
         options...,
     )
 
+    if status === PATHSolver.MCP_UserInterrupt
+        throw(InterruptException())
+    end
+
     if warn_on_convergence_failure && status != PATHSolver.MCP_Solved
         @warn "MCP not converged: PATH solver status is $(status)."
     end
