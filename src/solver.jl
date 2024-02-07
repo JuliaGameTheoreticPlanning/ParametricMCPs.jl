@@ -28,7 +28,7 @@ function solve(
 
     jacobian_linear_elements =
         enable_presolve ? jacobian_z!.constant_entries : empty(jacobian_z!.constant_entries)
-    status, z, info = PATHSolver.solve_mcp(
+    status, z::Vector, info::PATHSolver.Information = PATHSolver.solve_mcp(
         F,
         J,
         lower_bounds,
