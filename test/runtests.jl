@@ -46,7 +46,6 @@ using Enzyme: Enzyme
 
     @testset "backward pass" begin
         for θ in [feasible_parameters; infeasible_parameters]
-            #Enzyme.jacobian(Enzyme.Reverse, dummy_pipeline, Enzyme.Duplicated([1.0, 1.0], [0.0, 0.0]))
             ∇_finitediff = FiniteDiff.finite_difference_gradient(θ -> dummy_pipeline(problem, θ), θ)
 
             @testset "Zygote Reverse" begin

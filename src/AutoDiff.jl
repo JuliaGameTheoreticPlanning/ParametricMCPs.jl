@@ -155,8 +155,6 @@ function EnzymeRules.reverse(
     θ::EnzymeCore.Annotation;
     kwargs...,
 ) where {ReturnType}
-    println("reverse: $rt")
-
     if θ isa EnzymeCore.Duplicated
         ∂z∂θ = tape.∂z∂θ_thunk()
         ∂l∂z = tape.dres.z
