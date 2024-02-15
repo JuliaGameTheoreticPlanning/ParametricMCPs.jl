@@ -43,7 +43,7 @@ function ParametricMCP(
     lower_bounds,
     upper_bounds,
     parameter_dimension;
-    compute_sensitivities = true,
+    kwargs...,
 )
     # TODO
     length(lower_bounds) == length(upper_bounds) ||
@@ -67,7 +67,7 @@ function ParametricMCP(
         θ_symbolic,
         lower_bounds,
         upper_bounds;
-        compute_sensitivities,
+        kwargs...,
     )
 end
 
