@@ -4,6 +4,7 @@ using Random: Random
 using LinearAlgebra: norm
 using Zygote: Zygote
 using FiniteDiff: FiniteDiff
+using Symbolics: Symbolics
 
 @testset "ParametricMCPs.jl" begin
     rng = Random.MersenneTwister(1)
@@ -15,7 +16,7 @@ using FiniteDiff: FiniteDiff
     lower_bounds = [-Inf, -Inf, 0, 0]
     upper_bounds = [Inf, Inf, Inf, Inf]
     problem = ParametricMCPs.ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension)
-    problem_no_jacobian = ParametricMCPs.ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension; compute_sensitivities=false)
+    problem_no_jacobian = ParametricMCPs.ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension; compute_sensitivities=false, parallel=Symbolics.ShardedForm())
 
     feasible_parameters = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [rand(rng, 2) for _ in 1:10]...]
     infeasible_parameters = -feasible_parameters
