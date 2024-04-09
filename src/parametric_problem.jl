@@ -38,13 +38,7 @@ Note, this constructor uses `Symbolics.jl` to compile the relevant low-level fun
 where that is strictly infeasible, you can still use the low-level constructor to generate a
 `ParametricMCP`. In general, however, the use of this convenience construtor is advised.
 """
-function ParametricMCP(
-    f,
-    lower_bounds,
-    upper_bounds,
-    parameter_dimension;
-    kwargs...,
-)
+function ParametricMCP(f, lower_bounds, upper_bounds, parameter_dimension; kwargs...)
     # TODO
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
@@ -61,14 +55,7 @@ function ParametricMCP(
 
     f_symbolic = f(z_symbolic, θ_symbolic)
 
-    ParametricMCP(
-        f_symbolic,
-        z_symbolic,
-        θ_symbolic,
-        lower_bounds,
-        upper_bounds;
-        kwargs...,
-    )
+    ParametricMCP(f_symbolic, z_symbolic, θ_symbolic, lower_bounds, upper_bounds; kwargs...)
 end
 
 """
@@ -81,7 +68,7 @@ function ParametricMCP(
     lower_bounds,
     upper_bounds;
     compute_sensitivities = true,
-    parallel = nothing,
+    parallel = Symbolics.ShardedForm(),
 )
     length(lower_bounds) == length(upper_bounds) ||
         throw(ArgumentError("lower_bounds and upper_bounds have inconsistent lenghts."))
