@@ -2,8 +2,10 @@ module ParametricMCPs
 
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
+using FastDifferentiation: FastDifferentiation as FD
 using Symbolics: Symbolics
 
+include("Internals.jl")
 include("sparse_utils.jl")
 
 include("parametric_problem.jl")
@@ -12,5 +14,4 @@ include("solver.jl")
 export solve
 
 include("AutoDiff.jl")
-
 end

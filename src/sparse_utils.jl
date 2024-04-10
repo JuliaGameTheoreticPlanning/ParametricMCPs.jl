@@ -44,10 +44,25 @@ function _coo_from_sparse!(col, len, row, data, M)
 end
 
 "Get the (sparse) linear indices of all entries that are constant in the symbolic matrix M w.r.t. symbolic vector z."
-function get_constant_entries(M_symbolic, z_symbolic)
+function get_constant_entries(
+    M_symbolic::AbstractMatrix{<:Symbolics.Num},
+    z_symbolic::AbstractVector{<:Symbolics.Num},
+)
     _z_syms = Symbolics.tosymbol.(z_symbolic)
     findall(SparseArrays.nonzeros(M_symbolic)) do v
         _vars_syms = Symbolics.tosymbol.(Symbolics.get_variables(v))
+        isempty(intersect(_vars_syms, _z_syms))
+    end
+end
+
+function get_constant_entries(
+    M_symbolic::AbstractMatrix{<:FD.Node},
+    z_symbolic::AbstractVector{<:FD.Node},
+)
+    _z_syms = FD.variables(z_symbolic)
+    # find all entries that are not a function of any of the symbols in z
+    findall(SparseArrays.nonzeros(M_symbolic)) do v
+        _vars_syms = FD.variables(v)
         isempty(intersect(_vars_syms, _z_syms))
     end
 end
