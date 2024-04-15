@@ -8,6 +8,8 @@ using Symbolics: Symbolics
 include("Internals.jl")
 include("sparse_utils.jl")
 
+include("SymbolicUtils.jl")
+
 include("parametric_problem.jl")
 export ParametricMCP, get_parameter_dimension, get_problem_size
 include("solver.jl")
