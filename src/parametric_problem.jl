@@ -48,9 +48,6 @@ get_problem_size(problem::ParametricMCP) = problem.problem_size
 "Returns the number of decision variables for this problem."
 get_parameter_dimension(problem::ParametricMCP) = problem.parameter_dimension
 
-struct SymbolicsBackend end
-struct FastDifferentationBackend end
-
 # This method allows the user to specify the backend via a keyword argument which defaults to using Symbolics.jl
 function ParametricMCP(
     f,
