@@ -19,7 +19,13 @@ Creates a vector of `dimension` where each element is a scalar symbolic variable
 function make_variables end
 
 function make_variables(::SymbolicsBackend, name::Symbol, dimension::Int)
-    Symbolics.@variables($name[1:dimension]) .|> only |> Symbolics.scalarize
+    vars = Symbolics.@variables($name[1:dimension]) |> only |> Symbolics.scalarize
+
+    if isempty(vars)
+        vars = Symbolics.Num[]
+    end
+
+    vars
 end
 
 function make_variables(::FastDifferentationBackend, name::Symbol, dimension::Int)
@@ -38,12 +44,11 @@ Depending on the `in_place` flag, the function will be built as in-place `f!(res
 function build_function end
 
 function build_function(
-    ::SymbolicsBackend,
-    f_symbolic,
+    f_symbolic::AbstractArray{T},
     args_symbolic...;
     in_place,
     backend_options = (; parallel = Symbolics.ShardedForm(),),
-)
+) where {T<:Symbolics.Num}
     f_callable, f_callable! = Symbolics.build_function(
         f_symbolic,
         args_symbolic...;
@@ -54,44 +59,58 @@ function build_function(
 end
 
 function build_function(
-    ::FastDifferentiation,
-    f_symbolic,
+    f_symbolic::AbstractArray{T},
     args_symbolic...;
     in_place,
     backend_options = (;),
-)
+) where {T<:FD.Node}
     FD.make_function(f_symbolic, args_symbolic...; in_place, backend_options...)
 end
 
+"""
+    gradient(f_symbolic, x_symbolic)
+
+Computes the symbolic gradient of `f_symbolic` with respect to `x_symbolic`.
+"""
 function gradient end
 
-function gradient(::SymbolicsBackend, f_symbolic, x_symbolic)
+function gradient(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:Symbolics.Num}
     Symbolics.gradient(f_symbolic, x_symbolic)
 end
 
-function gradient(::FastDifferentationBackend, f, x)
+function gradient(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:FD.Node}
     # FD does not have a gradient utility so we just flatten the jacobian here
-    vec(FD.jacobian([f], x))
+    vec(FD.jacobian([f_symbolic], x_symbolic))
 end
 
+"""
+    jacobian(f_symbolic, x_symbolic)
+
+Computes the symbolic Jacobian of `f_symbolic` with respect to `x_symbolic`.
+"""
 function jacobian end
 
-function jacobian(::SymbolicsBackend, f_symbolic, x_symbolic)
+function jacobian(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:Symbolics.Num}
     Symbolics.jacobian(f_symbolic, x_symbolic)
 end
 
-function jacobian(::FastDifferentationBackend, f, x)
-    FD.jacobian([f], x)
+function jacobian(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:FD.Node}
+    FD.jacobian([f_symbolic], x_symbolic)
 end
 
+"""
+    sparse_jacobian(f_symbolic, x_symbolic)
+
+Computes the symbolic Jacobian of `f_symbolic` with respect to `x_symbolic` in a sparse format.
+"""
 function sparse_jacobian end
 
-function sparse_jacobian(::SymbolicsBackend, f_symbolic, x_symbolic)
+function sparse_jacobian(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:Symbolics.Num}
     Symbolics.sparsejacobian(f_symbolic, x_symbolic)
 end
 
-function sparse_jacobian(::FastDifferentationBackend, f, x)
-    FD.sparse_jacobian(f, x)
+function sparse_jacobian(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:FD.Node}
+    FD.sparse_jacobian(f_symbolic, x_symbolic)
 end
 
 end
