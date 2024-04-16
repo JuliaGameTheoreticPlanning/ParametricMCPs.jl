@@ -93,7 +93,6 @@ function ParametricMCP(
         _jacobian_z! =
             SymbolicUtils.build_function(jacobian_z, [z_symbolic; θ_symbolic]; in_place = true)
         rows, cols, _ = SparseArrays.findnz(jacobian_z)
-        # TODO: constant entry detection
         constant_entries = get_constant_entries(jacobian_z, z_symbolic)
         SparseFunction(rows, cols, size(jacobian_z), constant_entries) do result, z, θ
             _jacobian_z!(result, [z; θ])
@@ -109,7 +108,6 @@ function ParametricMCP(
                 in_place = true,
             )
             rows, cols, _ = SparseArrays.findnz(jacobian_θ)
-            # TODO: constant entry detection
             constant_entries = get_constant_entries(jacobian_θ, θ_symbolic)
             SparseFunction(rows, cols, size(jacobian_θ), constant_entries) do result, z, θ
                 _jacobian_θ!(result, [z; θ])

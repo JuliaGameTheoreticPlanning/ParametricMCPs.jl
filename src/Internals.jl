@@ -2,14 +2,6 @@ module Internals
 
 using FastDifferentiation: FastDifferentiation as FD
 
-function parameterize(f::Vector, θ)
-    f
-end
-
-function parameterize(f, θ)
-    f(θ)
-end
-
 function infer_problem_size(lower_bounds, upper_bounds)
     if lower_bounds isa AbstractVector
         length(lower_bounds)
