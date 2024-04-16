@@ -77,6 +77,7 @@ function ParametricMCP(
     lower_bounds::Vector,
     upper_bounds::Vector;
     compute_sensitivities = true,
+    warm_up_callbacks = true,
 ) where {T<:Union{FD.Node,Symbolics.Num}}
     problem_size = Internals.check_dimensions(f_symbolic, z_symbolic, lower_bounds, upper_bounds)
 
@@ -118,7 +119,7 @@ function ParametricMCP(
     end
 
     parameter_dimension = length(θ_symbolic)
-    ParametricMCP(
+    mcp = ParametricMCP(
         f!,
         jacobian_z!,
         jacobian_θ!,
@@ -127,12 +128,18 @@ function ParametricMCP(
         parameter_dimension,
         problem_size,
     )
+
+    if warm_up_callbacks
+        _warm_up_callbacks(mcp)
+    end
+
+    mcp
 end
 
 """
 Call all functions with a dummy input to trigger JIT compilation.
 """
-function compile_callbacks(mcp::ParametricMCP)
+function _warm_up_callbacks(mcp::ParametricMCP)
     # TODO: if all callbacks are type stable, we could also use `precompile` here
     θ = zeros(get_parameter_dimension(mcp))
     z = zeros(get_problem_size(mcp))
