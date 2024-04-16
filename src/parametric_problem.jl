@@ -84,6 +84,11 @@ function ParametricMCP(
     problem_size = Internals.check_dimensions(f_symbolic, z_symbolic, lower_bounds, upper_bounds)
 
     if !isnothing(parallel)
+        Base.depwarn(
+            "The `parallel` keyword argument in the constructor of `ParametricMCP` is deprecated and will be removed in a future release. Use `backend_options` instead.",
+            :ParametricMCPs;
+            force = true,
+        )
         backend_options = merge(backend_options, (; parallel))
     end
 
