@@ -78,21 +78,36 @@ function ParametricMCP(
     upper_bounds::Vector;
     compute_sensitivities = true,
     warm_up_callbacks = true,
+    parallel = nothing,
+    backend_options = (;),
 ) where {T<:Union{FD.Node,Symbolics.Num}}
     problem_size = Internals.check_dimensions(f_symbolic, z_symbolic, lower_bounds, upper_bounds)
+
+    if !isnothing(parallel)
+        backend_options = merge(backend_options, (; parallel))
+    end
 
     # compile all the symbolic expressions into callable julia code
     f! = let
         # The multi-arg version of `make_function` is broken so we concatenate to a single arg here
-        _f! = SymbolicUtils.build_function(f_symbolic, [z_symbolic; θ_symbolic]; in_place = true)
+        _f! = SymbolicUtils.build_function(
+            f_symbolic,
+            [z_symbolic; θ_symbolic];
+            in_place = true,
+            backend_options,
+        )
         (result, z, θ) -> _f!(result, [z; θ])
     end
 
     # same as above but for the Jacobian in z
     jacobian_z! = let
         jacobian_z = SymbolicUtils.sparse_jacobian(f_symbolic, z_symbolic)
-        _jacobian_z! =
-            SymbolicUtils.build_function(jacobian_z, [z_symbolic; θ_symbolic]; in_place = true)
+        _jacobian_z! = SymbolicUtils.build_function(
+            jacobian_z,
+            [z_symbolic; θ_symbolic];
+            in_place = true,
+            backend_options,
+        )
         rows, cols, _ = SparseArrays.findnz(jacobian_z)
         constant_entries = get_constant_entries(jacobian_z, z_symbolic)
         SparseFunction(rows, cols, size(jacobian_z), constant_entries) do result, z, θ

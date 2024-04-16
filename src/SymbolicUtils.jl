@@ -47,13 +47,14 @@ function build_function(
     f_symbolic::AbstractArray{T},
     args_symbolic...;
     in_place,
-    backend_options = (; parallel = Symbolics.ShardedForm(),),
+    backend_options = (;),
 ) where {T<:Symbolics.Num}
     f_callable, f_callable! = Symbolics.build_function(
         f_symbolic,
         args_symbolic...;
         expression = Val{false},
-        backend_options...,
+        # slightly saner defaults...
+        (; parallel = Symbolics.ShardedForm(), backend_options...)...,
     )
     in_place ? f_callable! : f_callable
 end
