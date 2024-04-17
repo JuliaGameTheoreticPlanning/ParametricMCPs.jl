@@ -6,10 +6,10 @@ module SymbolicUtils
 using Symbolics: Symbolics
 using FastDifferentiation: FastDifferentiation as FD
 
-export SymbolicsBackend, FastDifferentationBackend, make_variables, build_function
+export SymbolicsBackend, FastDifferentiationBackend, make_variables, build_function
 
 struct SymbolicsBackend end
-struct FastDifferentationBackend end
+struct FastDifferentiationBackend end
 
 """
     make_variables(backend, name, dimension)
@@ -28,7 +28,7 @@ function make_variables(::SymbolicsBackend, name::Symbol, dimension::Int)
     vars
 end
 
-function make_variables(::FastDifferentationBackend, name::Symbol, dimension::Int)
+function make_variables(::FastDifferentiationBackend, name::Symbol, dimension::Int)
     FD.make_variables(name, dimension)
 end
 

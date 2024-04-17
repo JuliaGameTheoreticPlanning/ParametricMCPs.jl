@@ -7,7 +7,7 @@ using FiniteDiff: FiniteDiff
 using Symbolics: Symbolics
 
 @testset "ParametricMCPs.jl" begin
-    for backend in [ParametricMCPs.SymbolicUtils.SymbolicsBackend(), ParametricMCPs.SymbolicUtils.FastDifferentationBackend()]
+    for backend in [ParametricMCPs.SymbolicUtils.SymbolicsBackend(), ParametricMCPs.SymbolicUtils.FastDifferentiationBackend()]
         rng = Random.MersenneTwister(1)
         parameter_dimension = 2
         # setup a dummy MCP which represents a QP with:
