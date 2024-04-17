@@ -1,7 +1,7 @@
 # ParametricMCPs
 
-[![CI](https://github.com/lassepe/ParametricMCPs.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/lassepe/ParametricMCPs.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/lassepe/ParametricMCPs.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/lassepe/ParametricMCPs.jl)
+[![CI](https://github.com/JuliaGameTheoreticPlanning/ParametricMCPs.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaGameTheoreticPlanning/ParametricMCPs.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/JuliaGameTheoreticPlanning/ParametricMCPs.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/JuliaGameTheoreticPlanning/ParametricMCPs.jl)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 
 This package provides a generic, differentiable mathematical programming layer by compiling mixed complementarity problems (MCPs) parameterized by a "runtime"-parameter vector. The resulting `ParametricMCP` can be solved for different parameter instantiations using `solve(problem, parameters)` and the `solve` routine is made differentiable via [ChainRulesCore](https://github.com/JuliaDiff/ChainRulesCore.jl) and [ForwardDiff](https://github.com/JuliaDiff/ForwardDiff.jl).
