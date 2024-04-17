@@ -75,11 +75,11 @@ Computes the symbolic gradient of `f_symbolic` with respect to `x_symbolic`.
 """
 function gradient end
 
-function gradient(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:Symbolics.Num}
+function gradient(f_symbolic::T, x_symbolic::Vector{T}) where {T<:Symbolics.Num}
     Symbolics.gradient(f_symbolic, x_symbolic)
 end
 
-function gradient(f_symbolic::Vector{T}, x_symbolic::Vector{T}) where {T<:FD.Node}
+function gradient(f_symbolic::T, x_symbolic::Vector{T}) where {T<:FD.Node}
     # FD does not have a gradient utility so we just flatten the jacobian here
     vec(FD.jacobian([f_symbolic], x_symbolic))
 end
