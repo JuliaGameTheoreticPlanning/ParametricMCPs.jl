@@ -6,10 +6,27 @@ module SymbolicUtils
 using Symbolics: Symbolics
 using FastDifferentiation: FastDifferentiation as FD
 
+using ADTypes: ADTypes
+
 export SymbolicsBackend, FastDifferentiationBackend, make_variables, build_function
 
-struct SymbolicsBackend end
-struct FastDifferentiationBackend end
+function SymbolicsBackend()
+    Base.depwarn(
+        "The `SymbolicsBackend` type is deprecated and will be removed in a future release. Use `ADTypes.AutoSymbolics` instead.",
+        :SymbolicUtils,
+        force = true,
+    )
+    ADTypes.AutoSymbolics()
+end
+
+function FastDifferentiationBackend()
+    Base.depwarn(
+        "The `FastDifferentiationBackend` type is deprecated and will be removed in a future release. Use `ADTypes.AutoFastDifferentiation` instead.",
+        :SymbolicUtils,
+        force = true,
+    )
+    ADTypes.AutoFastDifferentiation()
+end
 
 """
     make_variables(backend, name, dimension)
@@ -18,7 +35,7 @@ Creates a vector of `dimension` where each element is a scalar symbolic variable
 """
 function make_variables end
 
-function make_variables(::SymbolicsBackend, name::Symbol, dimension::Int)
+function make_variables(::ADTypes.AutoSymbolics, name::Symbol, dimension::Int)
     vars = Symbolics.@variables($name[1:dimension]) |> only |> Symbolics.scalarize
 
     if isempty(vars)
@@ -28,7 +45,7 @@ function make_variables(::SymbolicsBackend, name::Symbol, dimension::Int)
     vars
 end
 
-function make_variables(::FastDifferentiationBackend, name::Symbol, dimension::Int)
+function make_variables(::ADTypes.AutoFastDifferentiation, name::Symbol, dimension::Int)
     FD.make_variables(name, dimension)
 end
 

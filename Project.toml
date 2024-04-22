@@ -4,6 +4,7 @@ authors = ["lassepe <lasse.peters@mailbox.org> and contributors"]
 version = "0.1.14"
 
 [deps]
+ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -13,9 +14,10 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
+ADTypes = "1"
 ChainRulesCore = "1"
+FastDifferentiation = "0.3"
 ForwardDiff = "0.10"
 PATHSolver = "1.4"
 Symbolics = "4,5"
-FastDifferentiation = "0.3"
 julia = "1.8"

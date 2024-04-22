@@ -41,7 +41,7 @@ parameter vector `θ` of size `parameter_dimension` to an length `n` vector outp
 - `parameter_dimension`: the size of the parameter vector `θ` in `f`.
 
 Keyword arguments:
-- `[backend]`: the backend (from `ParametricMCPs.SymbolicUtils`) to be used for compiling callbacks for `f` and its Jacobians needed by PATH. `SymbolicsBackend` (default) is slightly more flexible. `FastDifferentiationBackend` has reduced compilation times and reduced runtime in some cases.
+- `[backend]`: the backend (from ADTypes.jl) to be used for compiling callbacks for `f` and its Jacobians needed by PATH. `AutoSymbolics()` (default) is slightly more flexible. `AutoFastDifferentiation()` has reduced compilation times and reduced runtime in some cases.
 - `compute_sensitivities`: whether to compile the callbacks needed for sensitivity computation.
 - `[problem_size]`: the number of decision variables. If not provided and `lower_bounds` or `upper_bounds` are vectors, the problem size is inferred from the length of these vectors.
 
@@ -55,7 +55,7 @@ function ParametricMCP(
     lower_bounds,
     upper_bounds,
     parameter_dimension;
-    backend = SymbolicUtils.SymbolicsBackend(),
+    backend = ADTypes.AutoSymbolics(),
     problem_size = Internals.infer_problem_size(lower_bounds, upper_bounds),
     kwargs...,
 )

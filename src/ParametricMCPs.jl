@@ -4,6 +4,7 @@ using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
 using FastDifferentiation: FastDifferentiation as FD
 using Symbolics: Symbolics
+using ADTypes: ADTypes
 
 include("Internals.jl")
 include("sparse_utils.jl")
