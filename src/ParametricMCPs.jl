@@ -16,5 +16,5 @@ export ParametricMCP, get_parameter_dimension, get_problem_size
 include("solver.jl")
 export solve
 
-include("AutoDiff.jl")
+include("InternalAutoDiffUtils.jl")
 end
