@@ -1,7 +1,7 @@
 name = "ParametricMCPs"
 uuid = "9b992ff8-05bb-4ea1-b9d2-5ef72d82f7ad"
 authors = ["lassepe <lasse.peters@mailbox.org> and contributors"]
-version = "0.1.15"
+version = "0.1.16"
 
 [deps]
 FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
