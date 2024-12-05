@@ -59,10 +59,10 @@ function get_constant_entries(
     M_symbolic::AbstractMatrix{<:FD.Node},
     z_symbolic::AbstractVector{<:FD.Node},
 )
-    _z_syms = FD.variables(z_symbolic)
+    _z_syms = [zs.node_value for zs in FD.variables(z_symbolic)]
     # find all entries that are not a function of any of the symbols in z
     findall(SparseArrays.nonzeros(M_symbolic)) do v
-        _vars_syms = FD.variables(v)
+        _vars_syms = [vs.node_value for vs in FD.variables(v)]
         isempty(intersect(_vars_syms, _z_syms))
     end
 end

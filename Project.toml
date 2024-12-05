@@ -14,8 +14,8 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 ChainRulesCore = "1"
+FastDifferentiation = "0.4"
 ForwardDiff = "0.10"
 PATHSolver = "1.4"
-Symbolics = "4,5"
-FastDifferentiation = "0.3"
+Symbolics = "4,5,6"
 julia = "1.8"
