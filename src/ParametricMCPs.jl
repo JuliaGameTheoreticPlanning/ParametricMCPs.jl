@@ -7,7 +7,7 @@ using SymbolicTracingUtils: SymbolicTracingUtils
 const SymbolicUtils = SymbolicTracingUtils
 
 # re-exporting symbolic tracing utilities for backward compatibility
-export SymbolicTracingUtils
+export SymbolicTracingUtils, SymbolicUtils
 
 include("Internals.jl")
 
