@@ -7,8 +7,8 @@ using FiniteDiff: FiniteDiff
 
 @testset "ParametricMCPs.jl" begin
     for backend in [
-        ParametricMCPs.SymbolicUtils.SymbolicsBackend(),
-        ParametricMCPs.SymbolicUtils.FastDifferentiationBackend(),
+        ParametricMCPs.SymbolicTracingUtils.SymbolicsBackend(),
+        ParametricMCPs.SymbolicTracingUtils.FastDifferentiationBackend(),
     ]
         rng = Random.MersenneTwister(1)
         parameter_dimension = 2

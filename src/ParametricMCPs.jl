@@ -2,14 +2,14 @@ module ParametricMCPs
 
 using PATHSolver: PATHSolver
 using SparseArrays: SparseArrays
-using FastDifferentiation: FastDifferentiation as FD
-using Symbolics: Symbolics
+using SymbolicTracingUtils: SymbolicTracingUtils
+
+const SymbolicUtils = SymbolicTracingUtils
+
+# re-exporting symbolic tracing utilities for backward compatibility
+export SymbolicTracingUtils
 
 include("Internals.jl")
-include("sparse_utils.jl")
-
-include("SymbolicUtils.jl")
-export SymbolicUtils
 
 include("parametric_problem.jl")
 export ParametricMCP, get_parameter_dimension, get_problem_size

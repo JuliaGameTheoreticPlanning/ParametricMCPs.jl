@@ -22,7 +22,7 @@ function solve(
 
     function J(n, nnz, z, col, len, row, data)
         jacobian_z!(jacobian_z!.result_buffer, z, θ)
-        _coo_from_sparse!(col, len, row, data, jacobian_z!.result_buffer)
+        Internals._coo_from_sparse!(col, len, row, data, jacobian_z!.result_buffer)
         Cint(0)
     end
 
