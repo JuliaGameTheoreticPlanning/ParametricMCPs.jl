@@ -41,7 +41,7 @@ parameter vector `θ` of size `parameter_dimension` to an length `n` vector outp
 - `parameter_dimension`: the size of the parameter vector `θ` in `f`.
 
 Keyword arguments:
-- `[backend]`: the backend (from `ParametricMCPs.SymbolicUtils`) to be used for compiling callbacks for `f` and its Jacobians needed by PATH. `SymbolicsBackend` (default) is slightly more flexible. `FastDifferentiationBackend` has reduced compilation times and reduced runtime in some cases.
+- `[backend]`: the backend (from `SymbolicTracingUtils`) to be used for compiling callbacks for `f` and its Jacobians needed by PATH. `SymbolicsBackend` (default) is slightly more flexible. `FastDifferentiationBackend` has reduced compilation times and reduced runtime in some cases.
 - `compute_sensitivities`: whether to compile the callbacks needed for sensitivity computation.
 - `[problem_size]`: the number of decision variables. If not provided and `lower_bounds` or `upper_bounds` are vectors, the problem size is inferred from the length of these vectors.
 
@@ -55,14 +55,14 @@ function ParametricMCP(
     lower_bounds,
     upper_bounds,
     parameter_dimension;
-    backend = SymbolicUtils.SymbolicsBackend(),
+    backend = SymbolicTracingUtils.SymbolicsBackend(),
     problem_size = Internals.infer_problem_size(lower_bounds, upper_bounds),
     kwargs...,
 )
     problem_size = Internals.check_dimensions(lower_bounds, upper_bounds, problem_size)
 
-    z_symbolic = SymbolicUtils.make_variables(backend, :z, problem_size)
-    θ_symbolic = SymbolicUtils.make_variables(backend, :θ, parameter_dimension)
+    z_symbolic = SymbolicTracingUtils.make_variables(backend, :z, problem_size)
+    θ_symbolic = SymbolicTracingUtils.make_variables(backend, :θ, parameter_dimension)
     f_symbolic = f(z_symbolic, θ_symbolic)
 
     ParametricMCP(f_symbolic, z_symbolic, θ_symbolic, lower_bounds, upper_bounds; kwargs...)
@@ -81,7 +81,7 @@ function ParametricMCP(
     warm_up_callbacks = true,
     parallel = nothing,
     backend_options = (;),
-) where {T<:Union{FD.Node,Symbolics.Num}}
+) where {T<:Union{SymbolicTracingUtils.FD.Node,SymbolicTracingUtils.Symbolics.Num}}
     problem_size = Internals.check_dimensions(f_symbolic, z_symbolic, lower_bounds, upper_bounds)
 
     if !isnothing(parallel)
@@ -96,7 +96,7 @@ function ParametricMCP(
     # compile all the symbolic expressions into callable julia code
     f! = let
         # The multi-arg version of `make_function` is broken so we concatenate to a single arg here
-        _f! = SymbolicUtils.build_function(
+        _f! = SymbolicTracingUtils.build_function(
             f_symbolic,
             [z_symbolic; θ_symbolic];
             in_place = true,
@@ -107,31 +107,41 @@ function ParametricMCP(
 
     # same as above but for the Jacobian in z
     jacobian_z! = let
-        jacobian_z = SymbolicUtils.sparse_jacobian(f_symbolic, z_symbolic)
-        _jacobian_z! = SymbolicUtils.build_function(
+        jacobian_z = SymbolicTracingUtils.sparse_jacobian(f_symbolic, z_symbolic)
+        _jacobian_z! = SymbolicTracingUtils.build_function(
             jacobian_z,
             [z_symbolic; θ_symbolic];
             in_place = true,
             backend_options,
         )
         rows, cols, _ = SparseArrays.findnz(jacobian_z)
-        constant_entries = get_constant_entries(jacobian_z, z_symbolic)
-        SparseFunction(rows, cols, size(jacobian_z), constant_entries) do result, z, θ
+        constant_entries = SymbolicTracingUtils.get_constant_entries(jacobian_z, z_symbolic)
+        SymbolicTracingUtils.SparseFunction(
+            rows,
+            cols,
+            size(jacobian_z),
+            constant_entries,
+        ) do result, z, θ
             _jacobian_z!(result, [z; θ])
         end
     end
 
     if compute_sensitivities
         jacobian_θ! = let
-            jacobian_θ = SymbolicUtils.sparse_jacobian(f_symbolic, θ_symbolic)
-            _jacobian_θ! = SymbolicUtils.build_function(
+            jacobian_θ = SymbolicTracingUtils.sparse_jacobian(f_symbolic, θ_symbolic)
+            _jacobian_θ! = SymbolicTracingUtils.build_function(
                 jacobian_θ,
                 [z_symbolic; θ_symbolic];
                 in_place = true,
             )
             rows, cols, _ = SparseArrays.findnz(jacobian_θ)
-            constant_entries = get_constant_entries(jacobian_θ, θ_symbolic)
-            SparseFunction(rows, cols, size(jacobian_θ), constant_entries) do result, z, θ
+            constant_entries = SymbolicTracingUtils.get_constant_entries(jacobian_θ, θ_symbolic)
+            SymbolicTracingUtils.SparseFunction(
+                rows,
+                cols,
+                size(jacobian_θ),
+                constant_entries,
+            ) do result, z, θ
                 _jacobian_θ!(result, [z; θ])
             end
         end
@@ -165,10 +175,10 @@ function _warm_up_callbacks(mcp::ParametricMCP)
     θ = zeros(get_parameter_dimension(mcp))
     z = zeros(get_problem_size(mcp))
     mcp.f!(z, z, θ)
-    jacz = ParametricMCPs.get_result_buffer(mcp.jacobian_z!)
+    jacz = mcp.jacobian_z!.result_buffer
     mcp.jacobian_z!(jacz, z, θ)
     if !isnothing(mcp.jacobian_θ!)
-        jacθ = ParametricMCPs.get_result_buffer(mcp.jacobian_θ!)
+        jacθ = mcp.jacobian_θ!.result_buffer
         mcp.jacobian_θ!(jacθ, z, θ)
     end
     nothing

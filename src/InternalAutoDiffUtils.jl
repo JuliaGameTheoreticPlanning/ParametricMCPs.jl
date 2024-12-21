@@ -1,6 +1,6 @@
 module InternalAutoDiffUtils
 
-using ..ParametricMCPs: get_problem_size, get_result_buffer, get_parameter_dimension
+using ..ParametricMCPs: get_problem_size, get_parameter_dimension
 using SparseArrays: SparseArrays
 using LinearAlgebra: LinearAlgebra
 
@@ -26,13 +26,13 @@ function solve_jacobian_θ(problem, solution, θ; active_tolerance = 1e-3)
     end
 
     ∂f_reduce∂θ = let
-        ∂f∂θ = get_result_buffer(jacobian_θ!)
+        ∂f∂θ = jacobian_θ!.result_buffer
         jacobian_θ!(∂f∂θ, z_star, θ)
         ∂f∂θ[inactive_indices, :]
     end
 
     ∂f_reduced∂z_reduced = let
-        ∂f∂z = get_result_buffer(jacobian_z!)
+        ∂f∂z = jacobian_z!.result_buffer
         jacobian_z!(∂f∂z, z_star, θ)
         ∂f∂z[inactive_indices, inactive_indices]
     end
